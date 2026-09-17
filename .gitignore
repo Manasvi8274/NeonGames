@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Logs
+*.log
+
+# Env
+.env
+.env.local
+
+# Firebase service account keys
+game-hub-ac66b-firebase-adminsdk-fbsvc-52ed740453.json
+*firebase-adminsdk*.json

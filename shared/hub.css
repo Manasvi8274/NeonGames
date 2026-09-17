@@ -1,0 +1,165 @@
+* { box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: #05050a;
+    font-family: 'Orbitron', monospace;
+    color: #eef2ff;
+    overflow: hidden;
+}
+
+.hub-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(180deg, rgba(5,5,10,0.95), rgba(5,5,10,0.6));
+    z-index: 20;
+    pointer-events: none;
+}
+.hub-header h1 {
+    font-size: 14px;
+    letter-spacing: 3px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 16px rgba(255,255,255,0.4);
+    margin: 0;
+}
+.hub-header .hub-emoji { font-size: 17px; }
+
+.hub {
+    display: flex;
+    height: 100%;
+    padding-top: 40px;
+    gap: 14px;
+    padding-right: 14px;
+    padding-bottom: 14px;
+    box-sizing: border-box;
+}
+
+.active-game-pane {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 14px 0 14px 14px;
+    min-height: 0;
+}
+
+#gameFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 14px;
+    background: #0a0a0f;
+    box-shadow: 0 0 50px rgba(0,0,0,0.6);
+}
+
+.game-rail {
+    width: 300px;
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-content: start;
+    gap: 10px;
+    overflow-y: auto;
+    padding: 14px 2px 14px 0;
+    min-height: 0;
+}
+
+.game-card {
+    --card-accent: #00ff88;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid color-mix(in srgb, var(--card-accent) 30%, transparent);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    text-align: left;
+    color: #eef2ff;
+    font-family: 'Orbitron', monospace;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: cardIn 0.4s ease forwards;
+    min-width: 0;
+}
+@keyframes cardIn {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.game-card:hover {
+    border-color: var(--card-accent);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--card-accent) 35%, transparent);
+    transform: translateY(-2px);
+}
+
+.game-card.active {
+    border-color: var(--card-accent);
+    background: color-mix(in srgb, var(--card-accent) 10%, transparent);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--card-accent) 45%, transparent);
+}
+
+.game-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.game-card-emoji { font-size: 22px; }
+.game-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--card-accent);
+    flex: 1;
+}
+.game-card-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--card-accent);
+    box-shadow: 0 0 8px var(--card-accent);
+    opacity: 0;
+    animation: dotPulse 1.4s ease-in-out infinite;
+}
+.game-card.active .game-card-dot { opacity: 1; }
+@keyframes dotPulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+.game-card-tagline {
+    font-size: 10px;
+    opacity: 0.65;
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+}
+
+/* Narrow screens: stack the rail above the game instead of beside it */
+@media (max-width: 900px) {
+    html, body { overflow: auto; }
+    .hub {
+        flex-direction: column;
+        padding: 66px 12px 12px;
+        height: auto;
+        min-height: 100%;
+    }
+    .active-game-pane { padding: 0; height: 70vh; min-height: 420px; }
+    .game-rail {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow: visible;
+        padding: 0;
+    }
+    .game-card { flex: 1 1 150px; }
+}
+
+body.light-mode { background: #eef1fb; }
+body.light-mode .hub-header {
+    background: linear-gradient(180deg, rgba(238,241,251,0.95), rgba(238,241,251,0.6));
+}
+body.light-mode .hub-header h1 { color: #10102a; text-shadow: none; }
+body.light-mode .game-card { background: rgba(0,0,0,0.02); color: #10102a; }
+body.light-mode #gameFrame { background: #fff; }

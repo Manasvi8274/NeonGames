@@ -3,43 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNAKE GAME</title>
+    <title>ARCHERY</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/theme.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="../shared/leaderboard-modal.css">
     <link rel="stylesheet" href="../shared/compact-media.css">
-    <style>:root { --accent: #00ff88; --hi-color: #ffc400; }</style>
-    <script src="js/index.js" defer></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (localStorage.getItem('game-theme') === 'light') {
-                document.body.classList.add('light-mode');
-                document.getElementById('themeBtn').textContent = '🌙 Dark';
-            }
-            // Hide the cross-link when embedded in the hub — the card rail already switches games.
-            if (window.top !== window.self) {
-                const sw = document.querySelector('.switch-btn');
-                if (sw && sw.parentElement) sw.parentElement.style.display = 'none';
-            }
-        });
-        function toggleTheme() {
-            const isLight = document.body.classList.toggle('light-mode');
-            document.getElementById('themeBtn').textContent = isLight ? '🌙 Dark' : '☀️ Light';
-            localStorage.setItem('game-theme', isLight ? 'light' : 'dark');
-        }
-    </script>
+    <style>:root { --accent: #ff3860; --hi-color: #ffc400; }</style>
+    <script src="../shared/theme.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="../shared/firebase-config.js"></script>
     <script src="../shared/leaderboard.js"></script>
     <script>Leaderboard.init(firebaseConfig);</script>
+    <script src="js/index.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.top !== window.self) {
+                const sw = document.querySelector('.switch-btn');
+                if (sw && sw.parentElement) sw.parentElement.style.display = 'none';
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="body">
         <div class="sidebar">
-            <h1 class="game-title">SNAKE</h1>
+            <h1 class="game-title">ARCHERY</h1>
             <div class="score-card">
                 <div class="score-label">Score</div>
                 <div id="scoreBox" class="score-value">0</div>
@@ -48,21 +40,28 @@
                 <div class="score-label hi-label">Hi Score</div>
                 <div id="hiscoreBox" class="score-value hi-value">0</div>
             </div>
-            <div id="powerHUD" class="power-hud" style="display:none;"></div>
+            <div class="score-card">
+                <div class="score-label">Arrow</div>
+                <div id="arrowBox" class="score-value" style="font-size:22px;">1 / 10</div>
+            </div>
+            <div class="score-card">
+                <div class="score-label">Wind</div>
+                <div id="windBox" class="score-value" style="font-size:22px;">— 0.0</div>
+            </div>
             <button class="neon-btn pause-btn" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
             <button class="neon-btn theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
-            <button class="neon-btn" onclick="restartGame()">🔄 Restart</button>
-            <button class="neon-btn" onclick="reset_hiscore()">Reset Hi Score</button>
-            <button class="neon-btn leaderboard-btn" onclick="Leaderboard.showBoard('snake')">🏆 Leaderboard</button>
-            <a href="../brick_breaker/index.html">
-                <button class="neon-btn switch-btn">Switch Game</button>
+            <button class="neon-btn" onclick="startNewGame()">🔄 Restart</button>
+            <button class="neon-btn" onclick="resetHiscore()">Reset Hi Score</button>
+            <button class="neon-btn leaderboard-btn" onclick="Leaderboard.showBoard('archery')">🏆 Leaderboard</button>
+            <a href="../index.html">
+                <button class="neon-btn switch-btn">🕹️ All Games</button>
             </a>
         </div>
         <div class="game-area">
-            <div id="board"></div>
+            <canvas id="board"></canvas>
             <div id="pauseOverlay" class="pause-overlay" style="display:none;">
                 <span>PAUSED</span>
-                <small>Press P to resume</small>
+                <small>Press Esc to resume</small>
             </div>
         </div>
     </div>

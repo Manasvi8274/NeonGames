@@ -267,6 +267,9 @@ function update() {
             context.fillStyle = lm() ? 'rgba(40,40,40,0.8)' : 'rgba(200,200,200,0.8)';
             context.font = "12px Orbitron, monospace";
             context.fillText("Press SPACE to restart", board.width / 2 - 80, board.height / 2 + 30);
+            // gameOverMusicPlayed also guards this: without it, this branch keeps re-firing
+            // every frame once gameover is true (ball position isn't reset on death).
+            if (window.Leaderboard && !gameOverMusicPlayed) Leaderboard.checkAndPromptIfRecord('brick_breaker', score);
             gameover = true;
         } else {
             ball.x = boardwidth / 2;

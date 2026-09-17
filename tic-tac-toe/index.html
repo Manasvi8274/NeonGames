@@ -3,65 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRICK BREAKER</title>
+    <title>TIC TAC TOE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="../shared/theme.css">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="../shared/leaderboard-modal.css">
     <link rel="stylesheet" href="../shared/compact-media.css">
-    <style>:root { --accent: #0095ff; --hi-color: #ffc400; }</style>
-    <script src="js/index.js" defer></script>
+    <style>:root { --accent: #ff9500; --hi-color: #ffc400; }</style>
+    <script src="../shared/theme.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            if (localStorage.getItem('game-theme') === 'light') {
-                document.body.classList.add('light-mode');
-                document.getElementById('themeBtn').textContent = '🌙 Dark';
-            }
             if (window.top !== window.self) {
                 const sw = document.querySelector('.switch-btn');
                 if (sw && sw.parentElement) sw.parentElement.style.display = 'none';
             }
         });
-        function toggleTheme() {
-            const isLight = document.body.classList.toggle('light-mode');
-            document.getElementById('themeBtn').textContent = isLight ? '🌙 Dark' : '☀️ Light';
-            localStorage.setItem('game-theme', isLight ? 'light' : 'dark');
-        }
     </script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="../shared/firebase-config.js"></script>
     <script src="../shared/leaderboard.js"></script>
     <script>Leaderboard.init(firebaseConfig);</script>
+    <script src="js/ai.js" defer></script>
+    <script src="js/index.js" defer></script>
 </head>
 <body>
     <div class="body">
         <div class="sidebar">
-            <h1 class="game-title">BRICK<br><span>BREAKER</span></h1>
+            <h1 class="game-title">TIC TAC TOE</h1>
             <div class="score-card">
-                <div class="score-label">Score</div>
-                <div id="scoreBox" class="score-value">0</div>
+                <div class="score-label">Turn</div>
+                <div id="turnBox" class="score-value">X</div>
             </div>
             <div class="score-card hi-card">
-                <div class="score-label hi-label">Hi Score</div>
+                <div class="score-label hi-label">Best Streak vs CPU</div>
                 <div id="hiscoreBox" class="score-value hi-value">0</div>
             </div>
-            <div class="score-card lives-card">
-                <div class="score-label lives-label">Lives</div>
-                <div id="livesBox" class="lives-value">❤ ❤ ❤</div>
+            <div class="score-card mode-toggle">
+                <div class="score-label">Mode</div>
+                <div class="mode-buttons">
+                    <button id="modePvp" class="mode-btn active" onclick="setMode('pvp')">PvP</button>
+                    <button id="modePvc" class="mode-btn" onclick="setMode('pvc')">vs CPU</button>
+                </div>
             </div>
-            <div id="powerHUD" class="power-hud" style="display:none;"></div>
+            <div id="statusMsg" class="status-msg"></div>
             <button class="neon-btn pause-btn" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
             <button class="neon-btn theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
-            <button class="neon-btn" onclick="resetgame()">🔄 Restart</button>
-            <button class="neon-btn reset-btn" onclick="resethiscore()">Reset Hi Score</button>
-            <button class="neon-btn leaderboard-btn" onclick="Leaderboard.showBoard('brick_breaker')">🏆 Leaderboard</button>
-            <a href="../snake/index.html">
-                <button class="neon-btn switch-btn">Switch Game</button>
+            <button class="neon-btn" onclick="resetBoard()">🔄 Restart</button>
+            <button class="neon-btn leaderboard-btn" onclick="Leaderboard.showBoard('tic-tac-toe')">🏆 Leaderboard</button>
+            <a href="../index.html">
+                <button class="neon-btn switch-btn">🕹️ All Games</button>
             </a>
         </div>
-        <canvas id="board"></canvas>
+        <div class="game-area">
+            <div id="board"></div>
+            <div id="pauseOverlay" class="pause-overlay" style="display:none;">
+                <span>PAUSED</span>
+                <small>Press Esc to resume</small>
+            </div>
+        </div>
     </div>
 </body>
 </html>

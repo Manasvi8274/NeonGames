@@ -76,6 +76,23 @@ function reset_hiscore() {
     localStorage.setItem("snake-hiscore", JSON.stringify(hiscore));
 }
 
+// Manual restart from the sidebar button — mirrors the game-over reset in
+// gameEngine() so the mid-game state always ends up consistent either way.
+function restartGame() {
+    speed = baseSpeed;
+    scoreMultiplier = 1;
+    shieldActive = false;
+    document.getElementById('board').classList.remove('shield-on');
+    activePower = null;
+    foodEaten = 0;
+    powerup = null;
+    InputDir = { x: 0, y: 0 };
+    snakearr = [{ x: 13, y: 15 }];
+    score = 0;
+    scoreBox.innerHTML = score;
+    if (paused) togglePause();
+}
+
 function togglePause() {
     paused = !paused;
     const btn = document.getElementById('pauseBtn');
@@ -199,6 +216,7 @@ function gameEngine() {
             musicStarted = false;
             InputDir = { x: 0, y: 0 };
             alert("GAME OVER");
+            if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('snake', score);
             snakearr = [{ x: 13, y: 15 }];
             score = 0;
             scoreBox.innerHTML = score;

@@ -1,0 +1,21 @@
+/* Shrinks sidebar chrome on short viewports so every game fits without
+   scrolling. Loaded last (after each game's own CSS) in every game,
+   including the two original games — additive only, doesn't touch
+   their base stylesheets. */
+@media (max-height: 760px) {
+    .body { gap: 24px; }
+    .sidebar { gap: 8px; min-width: 170px; }
+    .game-title { font-size: 30px !important; letter-spacing: 4px !important; margin-bottom: 2px; }
+    .score-card { padding: 8px 14px !important; }
+    .score-value { font-size: 24px !important; }
+    .score-label { font-size: 8px !important; margin-bottom: 2px !important; }
+    .neon-btn { padding: 8px 14px !important; font-size: 10px !important; }
+    .power-hud { padding: 6px 10px !important; }
+}
+@media (max-height: 620px) {
+    .game-title { font-size: 24px !important; }
+    .score-value { font-size: 20px !important; }
+    .sidebar { gap: 6px; }
+    .score-card { padding: 6px 12px !important; }
+    .neon-btn { padding: 6px 12px !important; }
+}

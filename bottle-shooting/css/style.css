@@ -1,0 +1,40 @@
+.game-area {
+    position: relative;
+}
+
+#board {
+    background: #0a0a12;
+    border: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    border-radius: 10px;
+    box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 20%, transparent),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+    cursor: none;
+    display: block;
+}
+
+.time-card .score-value {
+    color: #fff;
+    text-shadow: none;
+    transition: color 0.2s;
+}
+.time-card.low-time .score-value {
+    color: #ff3860;
+    text-shadow: 0 0 10px #ff3860;
+    animation: timeBlink 0.5s ease-in-out infinite alternate;
+}
+@keyframes timeBlink {
+    from { opacity: 0.6; }
+    to   { opacity: 1; }
+}
+
+.combo-card .score-value {
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent);
+    font-size: 28px;
+}
+
+body.light-mode #board {
+    background: #f4f0fb;
+    box-shadow: 0 4px 24px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+body.light-mode .time-card .score-value { color: #202030; }

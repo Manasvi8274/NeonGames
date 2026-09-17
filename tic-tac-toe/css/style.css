@@ -1,0 +1,95 @@
+#board {
+    width: min(64vmin, 460px);
+    height: min(64vmin, 460px);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 10px;
+    background: #050510;
+    border: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 15%, transparent),
+                inset 0 0 30px rgba(0,0,0,0.4);
+}
+
+.cell {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: min(12vmin, 88px);
+    font-weight: 900;
+    font-family: 'Orbitron', monospace;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+}
+.cell:empty:hover {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.cell.mark-x {
+    color: var(--accent);
+    text-shadow: 0 0 14px var(--accent), 0 0 30px color-mix(in srgb, var(--accent) 50%, transparent);
+    cursor: default;
+}
+.cell.mark-o {
+    color: #00e5ff;
+    text-shadow: 0 0 14px #00e5ff, 0 0 30px rgba(0,229,255,0.5);
+    cursor: default;
+}
+
+.cell.win-cell {
+    background: color-mix(in srgb, var(--hi-color) 18%, transparent);
+    border-color: var(--hi-color);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--hi-color) 45%, transparent);
+    animation: winPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes winPulse {
+    from { box-shadow: 0 0 10px color-mix(in srgb, var(--hi-color) 30%, transparent); }
+    to   { box-shadow: 0 0 26px color-mix(in srgb, var(--hi-color) 60%, transparent); }
+}
+
+.mode-toggle { display: flex; flex-direction: column; gap: 8px; }
+.mode-buttons { display: flex; gap: 8px; }
+.mode-btn {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.6);
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+}
+.mode-btn:hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.mode-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.status-msg {
+    min-height: 18px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--hi-color);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--hi-color) 50%, transparent);
+}
+
+body.light-mode #board { background: #f4fff8; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+body.light-mode .cell { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
+body.light-mode .cell:empty:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+body.light-mode .cell.mark-o { color: #0088aa; text-shadow: none; }
+body.light-mode .mode-btn { color: rgba(20,20,40,0.6); border-color: rgba(0,0,0,0.15); }

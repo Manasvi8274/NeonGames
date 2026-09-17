@@ -1,0 +1,21 @@
+#board {
+    border: 2px solid rgba(255, 56, 96, 0.35);
+    border-radius: 12px;
+    box-shadow:
+        0 0 30px rgba(255, 56, 96, 0.15),
+        0 0 60px rgba(255, 56, 96, 0.05),
+        inset 0 0 30px rgba(255, 56, 96, 0.03);
+    cursor: crosshair;
+    animation: archeryGlow 4s ease-in-out infinite;
+}
+
+@keyframes archeryGlow {
+    0%, 100% { box-shadow: 0 0 30px rgba(255, 56, 96, 0.15), inset 0 0 30px rgba(255, 56, 96, 0.03); }
+    50%      { box-shadow: 0 0 50px rgba(255, 56, 96, 0.3), inset 0 0 50px rgba(255, 56, 96, 0.06); }
+}
+
+body.light-mode #board {
+    border-color: rgba(200, 20, 60, 0.35);
+    box-shadow: 0 4px 24px rgba(200, 20, 60, 0.12);
+    animation: none;
+}

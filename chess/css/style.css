@@ -1,0 +1,76 @@
+#board {
+    width: 80vmin;
+    height: 80vmin;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 20%, transparent),
+                0 0 60px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6vmin;
+    line-height: 1;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: background 0.15s;
+}
+.square.light { background: #2a2a3a; }
+.square.dark  { background: #17171f; }
+body.light-mode .square.light { background: #eef0fa; }
+body.light-mode .square.dark  { background: #c3c8e0; }
+
+.square.piece-w { color: #fdfdfd; text-shadow: 0 0 6px rgba(255,255,255,0.55); }
+.square.piece-b { color: #0a0a10; text-shadow: 0 0 4px rgba(0,0,0,0.55); }
+body.light-mode .square.piece-b { text-shadow: none; }
+
+.square:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+.square.selected { background: color-mix(in srgb, var(--accent) 35%, transparent) !important; }
+
+.square.legal-target::after {
+    content: '';
+    position: absolute;
+    width: 26%;
+    height: 26%;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 75%, transparent);
+    box-shadow: 0 0 10px var(--accent);
+    pointer-events: none;
+}
+.square.legal-target.piece-w::after,
+.square.legal-target.piece-b::after {
+    width: 92%;
+    height: 92%;
+    border-radius: 10%;
+    background: transparent;
+    border: 3px solid color-mix(in srgb, var(--accent) 75%, transparent);
+    box-shadow: 0 0 10px var(--accent);
+}
+
+.square.last-move { background: color-mix(in srgb, var(--accent) 15%, transparent) !important; }
+
+.square.in-check {
+    background: color-mix(in srgb, #ff3860 45%, transparent) !important;
+    animation: checkPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes checkPulse {
+    from { box-shadow: inset 0 0 10px rgba(255,56,96,0.4); }
+    to   { box-shadow: inset 0 0 22px rgba(255,56,96,0.85); }
+}
+
+#statusBox {
+    text-align: center;
+    min-height: 18px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--accent);
+    text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
