@@ -1,30 +1,303 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
 body {
+    background: #0a0a0f;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Orbitron', monospace;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 128, 255, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(255, 0, 128, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Sidebar layout — mirrors Snake */
+.body {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 200px;
+}
+
+.game-title {
+    font-size: 40px;
+    font-weight: 900;
+    color: #0095ff;
+    text-shadow: 0 0 20px #0095ff, 0 0 50px #0095ff, 0 0 100px #0095ff;
+    letter-spacing: 6px;
     text-align: center;
-    background-image: url("back.jpg");
-    background-size: 100vw 100vh;
-    background-repeat: no-repeat;
+    line-height: 1.15;
+    animation: titlePulse 3s ease-in-out infinite;
 }
 
+.game-title span {
+    color: #ff0066;
+    text-shadow: 0 0 20px #ff0066, 0 0 50px #ff0066, 0 0 100px #ff0066;
+}
+
+@keyframes titlePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Score cards */
+.score-card {
+    background: rgba(0, 149, 255, 0.05);
+    border: 1px solid rgba(0, 149, 255, 0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
+    backdrop-filter: blur(10px);
+}
+
+.hi-card {
+    background: rgba(255, 196, 0, 0.05);
+    border-color: rgba(255, 196, 0, 0.25);
+}
+
+.lives-card {
+    background: rgba(255, 0, 102, 0.05);
+    border-color: rgba(255, 0, 102, 0.25);
+}
+
+.score-label {
+    font-size: 10px;
+    color: rgba(0, 149, 255, 0.6);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.hi-label    { color: rgba(255, 196, 0, 0.6); }
+.lives-label { color: rgba(255, 0, 102, 0.6); }
+
+.score-value {
+    font-size: 38px;
+    font-weight: 700;
+    color: #0095ff;
+    text-shadow: 0 0 10px #0095ff;
+}
+
+.hi-value {
+    color: #ffc400;
+    text-shadow: 0 0 10px #ffc400;
+}
+
+.lives-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ff0066;
+    text-shadow: 0 0 8px #ff0066;
+    letter-spacing: 4px;
+}
+
+/* Canvas */
 #board {
-    margin: 1%;
-    background-color: black;
-    border-top: 5px solid skyblue;
-    border-right: 5px solid skyblue;
-    border-left: 5px solid skyblue;
-    /* display: block; */
+    border: 2px solid rgba(0, 149, 255, 0.35);
+    border-radius: 10px;
+    box-shadow:
+        0 0 30px rgba(0, 149, 255, 0.15),
+        0 0 60px rgba(0, 149, 255, 0.05);
+    display: block;
+    animation: boardGlow 4s ease-in-out infinite;
 }
 
-.resethiscore {
-    margin: 10px;
-    border: 1px solid black;
-    background-color: red;
-    color: blue;
-    box-shadow: rgb(239, 221, 104) 5px 5px 5px;
+@keyframes boardGlow {
+    0%, 100% { box-shadow: 0 0 30px rgba(0, 149, 255, 0.15); }
+    50%       { box-shadow: 0 0 50px rgba(0, 149, 255, 0.3);  }
 }
-.switch{
-    margin: 10px;
-    border: 1px solid black;
-    background-color: yellow;
-    color: rgb(0, 94, 0);
-    box-shadow: rgb(239, 104, 104) 5px 5px 5px;
+
+/* Buttons */
+.neon-btn {
+    background: transparent;
+    border: 1px solid rgba(0, 149, 255, 0.4);
+    color: #0095ff;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    width: 100%;
 }
+
+.neon-btn:hover {
+    background: rgba(0, 149, 255, 0.1);
+    border-color: #0095ff;
+    box-shadow: 0 0 15px rgba(0, 149, 255, 0.4);
+    color: #fff;
+}
+
+.pause-btn {
+    border-color: rgba(0, 210, 210, 0.4);
+    color: #00d4d4;
+}
+.pause-btn:hover {
+    background: rgba(0, 210, 210, 0.1);
+    border-color: #00d4d4;
+    box-shadow: 0 0 15px rgba(0, 210, 210, 0.4);
+    color: #fff;
+}
+.pause-btn.paused {
+    border-color: rgba(255, 140, 0, 0.5);
+    color: #ff8c00;
+    animation: pauseBlink 0.8s ease-in-out infinite alternate;
+}
+@keyframes pauseBlink {
+    from { opacity: 0.7; }
+    to   { opacity: 1; box-shadow: 0 0 14px rgba(255, 140, 0, 0.5); }
+}
+
+.theme-toggle {
+    border-color: rgba(255, 220, 50, 0.45);
+    color: #ffe566;
+}
+.theme-toggle:hover {
+    background: rgba(255, 220, 50, 0.1);
+    border-color: #ffe566;
+    box-shadow: 0 0 15px rgba(255, 220, 50, 0.35);
+    color: #fff;
+}
+
+.reset-btn {
+    border-color: rgba(255, 0, 102, 0.4);
+    color: #ff0066;
+}
+.reset-btn:hover {
+    background: rgba(255, 0, 102, 0.1);
+    border-color: #ff0066;
+    box-shadow: 0 0 15px rgba(255, 0, 102, 0.4);
+    color: #fff;
+}
+
+.switch-btn {
+    border-color: rgba(0, 149, 255, 0.4);
+    color: #0095ff;
+}
+.switch-btn:hover {
+    background: rgba(0, 149, 255, 0.1);
+    border-color: #0095ff;
+    box-shadow: 0 0 15px rgba(0, 149, 255, 0.4);
+    color: #fff;
+}
+
+a {
+    text-decoration: none;
+    display: block;
+}
+
+/* Power HUD */
+.power-hud {
+    border: 1px solid currentColor;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Orbitron', monospace;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    animation: hudBlink 0.9s ease-in-out infinite alternate;
+}
+.power-hud span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+@keyframes hudBlink {
+    from { opacity: 0.6; }
+    to   { opacity: 1.0; }
+}
+
+/* ===== LIGHT MODE ===== */
+body.light-mode { background: #eef2ff; }
+body.light-mode::before {
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 80, 200, 0.09) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(200, 0, 80, 0.08) 0%, transparent 50%);
+}
+body.light-mode .game-title {
+    color: #0044aa;
+    text-shadow: 0 0 12px rgba(0, 80, 200, 0.25);
+    animation: none;
+}
+body.light-mode .game-title span {
+    color: #aa0055;
+    text-shadow: 0 0 12px rgba(200, 0, 80, 0.25);
+}
+body.light-mode .score-card {
+    background: rgba(255,255,255,0.9);
+    border-color: rgba(0, 80, 200, 0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+body.light-mode .hi-card    { border-color: rgba(160, 110, 0, 0.2); }
+body.light-mode .lives-card { border-color: rgba(180, 0, 60, 0.2); }
+body.light-mode .score-label { color: rgba(0, 60, 160, 0.6); }
+body.light-mode .hi-label   { color: rgba(130, 85, 0, 0.7); }
+body.light-mode .lives-label{ color: rgba(160, 0, 50, 0.7); }
+body.light-mode .score-value { color: #0044aa; text-shadow: none; }
+body.light-mode .hi-value    { color: #8b6000; text-shadow: none; }
+body.light-mode .lives-value { color: #cc0033; text-shadow: none; }
+body.light-mode .neon-btn {
+    border-color: rgba(0, 80, 200, 0.35);
+    color: #0044aa;
+    background: rgba(255,255,255,0.75);
+}
+body.light-mode .neon-btn:hover {
+    background: rgba(0, 80, 200, 0.08);
+    border-color: #0044aa;
+    box-shadow: 0 2px 12px rgba(0, 60, 180, 0.18);
+    color: #002070;
+}
+body.light-mode .pause-btn {
+    border-color: rgba(0, 140, 140, 0.35);
+    color: #007777;
+}
+body.light-mode .pause-btn:hover {
+    background: rgba(0, 140, 140, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 120, 120, 0.18);
+}
+body.light-mode .theme-toggle {
+    border-color: rgba(160, 120, 0, 0.35);
+    color: #6b5000;
+}
+body.light-mode .theme-toggle:hover {
+    background: rgba(160, 120, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(140, 100, 0, 0.18);
+}
+body.light-mode .reset-btn {
+    border-color: rgba(180, 0, 60, 0.35);
+    color: #aa0044;
+}
+body.light-mode .reset-btn:hover {
+    background: rgba(180, 0, 60, 0.08);
+    box-shadow: 0 2px 12px rgba(160, 0, 50, 0.18);
+}
+body.light-mode .switch-btn {
+    border-color: rgba(0, 80, 200, 0.35);
+    color: #0044aa;
+}
+body.light-mode #board {
+    border-color: rgba(0, 80, 200, 0.3);
+    box-shadow: 0 4px 24px rgba(0, 60, 180, 0.12);
+    animation: none;
+}
+body.light-mode .power-hud { background: rgba(255,255,255,0.8); }

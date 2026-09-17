@@ -1,18 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRICK-BREAKER</title>
+    <title>BRICK BREAKER</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/index.css">
-    <script src="js/index.js"></script>
+    <script src="js/index.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (localStorage.getItem('game-theme') === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('themeBtn').textContent = '🌙 Dark';
+            }
+        });
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-mode');
+            document.getElementById('themeBtn').textContent = isLight ? '🌙 Dark' : '☀️ Light';
+            localStorage.setItem('game-theme', isLight ? 'light' : 'dark');
+        }
+    </script>
 </head>
-
 <body>
-    <canvas id="board"></canvas><br>
-    <button class="resethiscore" onclick="resethiscore()">RESET HISCORE</button>
-    <a href="/snake/index.html"><button class="switch">SWITCH</button></a>
+    <div class="body">
+        <div class="sidebar">
+            <h1 class="game-title">BRICK<br><span>BREAKER</span></h1>
+            <div class="score-card">
+                <div class="score-label">Score</div>
+                <div id="scoreBox" class="score-value">0</div>
+            </div>
+            <div class="score-card hi-card">
+                <div class="score-label hi-label">Hi Score</div>
+                <div id="hiscoreBox" class="score-value hi-value">0</div>
+            </div>
+            <div class="score-card lives-card">
+                <div class="score-label lives-label">Lives</div>
+                <div id="livesBox" class="lives-value">❤ ❤ ❤</div>
+            </div>
+            <div id="powerHUD" class="power-hud" style="display:none;"></div>
+            <button class="neon-btn pause-btn" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
+            <button class="neon-btn theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
+            <button class="neon-btn reset-btn" onclick="resethiscore()">Reset Hi Score</button>
+            <a href="../snake/index.html">
+                <button class="neon-btn switch-btn">Switch Game</button>
+            </a>
+        </div>
+        <canvas id="board"></canvas>
+    </div>
 </body>
-
 </html>

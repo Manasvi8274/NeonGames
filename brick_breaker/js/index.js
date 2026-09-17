@@ -1,8 +1,8 @@
 //musics
 let gameOverMusicPlayed = false;
-let gameover_music = new Audio("/brick_breaker/js/gameover.mp3");
-let collide = new Audio("/brick_breaker/js/collide.wav");
-let music = new Audio("/brick_breaker/js/music.mp3");
+let gameover_music = new Audio("js/gameover.mp3");
+let collide = new Audio("js/collide.wav");
+let music = new Audio("js/music.mp3");
 
 //var
 let board;
@@ -16,8 +16,8 @@ let playerheight = (boardwidth - 80) / 50;
 let playervelocityX = 20;
 
 let player = {
-    x: boardwidth / 2 - playerwidth / 2,//to make center
-    y: boardheight - playerheight - 5,//to make height of player (-5 to make sure not to stick to boundary )
+    x: boardwidth / 2 - playerwidth / 2,
+    y: boardheight - playerheight - 5,
     width: playerwidth,
     height: playerheight,
     velocityX: playervelocityX,
@@ -29,7 +29,7 @@ let ballheight = boardwidth / 50;
 let ballvelocityx = 3;
 let ballvelocityy = -2;
 let ball = {
-    x: boardwidth / 2,//inititl position
+    x: boardwidth / 2,
     y: boardheight / 2,
     width: ballwidth,
     height: ballheight,
@@ -42,49 +42,169 @@ let blockarray = [];
 let blockwidth = (boardwidth - 100) / 8;
 let blockheight = (boardwidth - 80) / 50;
 let blockcolumns = 8;
-let blockrows = 3;//more as level goes up
+let blockrows = 3;
 let blockmaxrows = 10;
 let blockcount = 0;
 
-//starting block
+//starting block position
 let blockx = 15;
 let blocky = 45;
 
 //score
 let score = 0;
 
-//highscore 
+//highscore
 let hiscore = localStorage.getItem("brickbreaker-hiscore");
 if (hiscore === null) {
     hiscore = 0;
     localStorage.setItem("brickbreaker-hiscore", JSON.stringify(hiscore));
-}
-else {
+} else {
     hiscore = JSON.parse(localStorage.getItem("brickbreaker-hiscore"));
-    localStorage.setItem("brickbreaker-hiscore", JSON.stringify(hiscore));
 }
-//gameover
+
+//game state
 let gameover = false;
+let paused = false;
+
+// Lives system
+let lives = 3;
+
+// Power-up system
+let droppingPowers = [];
+let fireballActive = false;
+let fireballTimer = null;
+let wideTimer = null;
+let slowTimer = null;
+
+const BRICK_POWERS = [
+    { type: 'wide',     color: '#0095ff', label: 'WIDE'  },
+    { type: 'slow',     color: '#00ccff', label: 'SLOW'  },
+    { type: 'life',     color: '#ff0066', label: '+LIFE' },
+    { type: 'fireball', color: '#ff6600', label: 'FIRE'  },
+];
+
+function lm() { return document.body.classList.contains('light-mode'); }
+
+// DOM updates
+function updateScoreDisplay() {
+    const s = document.getElementById('scoreBox');
+    const h = document.getElementById('hiscoreBox');
+    if (s) s.innerHTML = score;
+    if (h) h.innerHTML = hiscore;
+}
+
+function updateLivesDisplay() {
+    const lb = document.getElementById('livesBox');
+    if (lb) lb.innerHTML = ('❤ '.repeat(lives)).trim();
+}
+
+function updatePowerHUD() {
+    const hud = document.getElementById('powerHUD');
+    if (!hud) return;
+    let label = '', color = '#fff';
+    if (fireballActive)  { label = '🔥 FIREBALL';    color = '#ff6600'; }
+    else if (wideTimer)  { label = '↔ WIDE PADDLE';  color = '#0095ff'; }
+    else if (slowTimer)  { label = '🐌 SLOW BALL';   color = '#00ccff'; }
+    if (label) {
+        hud.innerHTML = `<span>${label}</span>`;
+        hud.style.color = color;
+        hud.style.borderColor = color;
+        hud.style.display = 'flex';
+    } else {
+        hud.style.display = 'none';
+    }
+}
+
+// Pause
+function togglePause() {
+    if (gameover) return;
+    paused = !paused;
+    const btn = document.getElementById('pauseBtn');
+    if (btn) {
+        btn.textContent = paused ? '▶ Resume' : '⏸ Pause';
+        btn.classList.toggle('paused', paused);
+    }
+    if (paused) music.pause();
+    else music.play();
+}
+
+function drawPauseOverlay() {
+    context.fillStyle = lm() ? 'rgba(238,242,255,0.92)' : 'rgba(5,5,16,0.92)';
+    context.fillRect(0, 0, board.width, board.height);
+    context.shadowBlur = lm() ? 0 : 20;
+    context.shadowColor = lm() ? 'transparent' : '#0095ff';
+    context.fillStyle = lm() ? '#0044aa' : '#0095ff';
+    context.font = "bold 40px Orbitron, monospace";
+    context.fillText("PAUSED", board.width / 2 - 90, board.height / 2 - 10);
+    context.shadowBlur = 0;
+    context.fillStyle = lm() ? 'rgba(40,40,80,0.8)' : 'rgba(160,180,220,0.8)';
+    context.font = "12px Orbitron, monospace";
+    context.fillText("Press P to resume", board.width / 2 - 72, board.height / 2 + 32);
+}
+
+// Power-up drops
+function dropPower(bx, by) {
+    if (Math.random() > 0.28) return;
+    const def = BRICK_POWERS[Math.floor(Math.random() * BRICK_POWERS.length)];
+    droppingPowers.push({ x: bx, y: by, width: 52, height: 22, vy: 2.5, ...def });
+}
+
+function applyBrickPower(type) {
+    switch (type) {
+        case 'wide':
+            player.width = playerwidth * 1.8;
+            if (wideTimer) clearTimeout(wideTimer);
+            wideTimer = setTimeout(() => { player.width = playerwidth; wideTimer = null; updatePowerHUD(); }, 8000);
+            break;
+        case 'slow':
+            ball.velocityx *= 0.55;
+            ball.velocityy *= 0.55;
+            if (slowTimer) clearTimeout(slowTimer);
+            slowTimer = setTimeout(() => { ball.velocityx /= 0.55; ball.velocityy /= 0.55; slowTimer = null; updatePowerHUD(); }, 8000);
+            break;
+        case 'life':
+            lives = Math.min(5, lives + 1);
+            updateLivesDisplay();
+            break;
+        case 'fireball':
+            fireballActive = true;
+            if (fireballTimer) clearTimeout(fireballTimer);
+            fireballTimer = setTimeout(() => { fireballActive = false; fireballTimer = null; updatePowerHUD(); }, 5000);
+            break;
+    }
+    updatePowerHUD();
+}
 
 window.onload = function () {
     board = document.getElementById("board");
     board.height = boardheight;
     board.width = boardwidth;
     context = board.getContext("2d");
-    //initial player
-    context.fillStyle = "lightgreen";
-    context.fillRect(player.x, player.y, player.width, player.height);
 
-    requestAnimationFrame(update);//call a function update
+    context.shadowBlur = 20;
+    context.shadowColor = '#0095ff';
+    context.fillStyle = '#0095ff';
+    context.fillRect(player.x, player.y, player.width, player.height);
+    context.shadowBlur = 0;
+
+    updateScoreDisplay();
+    updateLivesDisplay();
+    updatePowerHUD();
+
+    requestAnimationFrame(update);
     music.play();
     document.addEventListener("keydown", moveplayer);
-
-    //create a block
     createblock();
 }
 
 function update() {
-    requestAnimationFrame(update);//call a function update 
+    requestAnimationFrame(update);
+
+    if (paused) {
+        drawPauseOverlay();
+        return;
+    }
+
     if (gameover) {
         music.pause();
         if (!gameOverMusicPlayed) {
@@ -96,160 +216,200 @@ function update() {
             document.addEventListener("keydown", moveplayer);
         }, 1500);
     }
-    context.clearRect(0, 0, board.width, board.height);
-    context.fillStyle = "lightgreen";
-    context.fillRect(player.x, player.y, player.width, player.height);
 
-    context.fillStyle = "white";
+    // Background
+    context.fillStyle = lm() ? '#f0f4ff' : '#050510';
+    context.fillRect(0, 0, board.width, board.height);
+
+    // Paddle
+    let paddleColor = lm()
+        ? (wideTimer ? '#009988' : '#0055cc')
+        : (wideTimer ? '#00ffcc' : '#0095ff');
+    context.shadowBlur = lm() ? 8 : 20;
+    context.shadowColor = paddleColor;
+    context.fillStyle = paddleColor;
+    context.fillRect(player.x, player.y, player.width, player.height);
+    context.shadowBlur = 0;
+
+    // Ball
     ball.x += ball.velocityx;
     ball.y += ball.velocityy;
-    context.fillRect(ball.x, ball.y, ball.width, ball.height);
+    let ballColor = fireballActive ? '#ff6600' : (lm() ? '#1a1a55' : '#ffffff');
+    let ballGlow  = fireballActive ? '#ff3300' : (lm() ? '#3333aa' : '#ffffff');
+    context.shadowBlur = fireballActive ? 30 : (lm() ? 8 : 20);
+    context.shadowColor = ballGlow;
+    context.fillStyle = ballColor;
+    context.beginPath();
+    context.arc(ball.x + ball.width / 2, ball.y + ball.height / 2, ball.width / 2, 0, Math.PI * 2);
+    context.fill();
+    context.shadowBlur = 0;
 
-    //bounce ball off
+    // Ball wall bouncing
     if (ball.y <= 0) {
-        ball.velocityy *= -1;
-    }
-    else if (ball.x <= 0 || (ball.x + ball.width) >= boardwidth) {
-        ball.velocityx *= -1;
-    }
-    else if (ball.y + ball.height >= boardheight) {
-        // gameover
-        context.font = "20px sans-serif";
-        context.fillText("GAME OVER: Press 'SPACEBAR' to restart", 80, 400);
-        gameover = true;
+        ball.y = 0;
+        ball.velocityy = Math.abs(ball.velocityy);
+    } else if (ball.x <= 0) {
+        ball.x = 0;
+        ball.velocityx = Math.abs(ball.velocityx);
+    } else if (ball.x + ball.width >= boardwidth) {
+        ball.x = boardwidth - ball.width;
+        ball.velocityx = -Math.abs(ball.velocityx);
+    } else if (ball.y + ball.height >= boardheight) {
+        lives--;
+        updateLivesDisplay();
+        if (lives <= 0) {
+            context.shadowBlur = lm() ? 0 : 20;
+            context.shadowColor = lm() ? 'transparent' : '#ff0066';
+            context.fillStyle = lm() ? '#cc0033' : '#ff0066';
+            context.font = "bold 28px Orbitron, monospace";
+            context.fillText("GAME OVER", board.width / 2 - 90, board.height / 2 - 10);
+            context.shadowBlur = 0;
+            context.fillStyle = lm() ? 'rgba(40,40,40,0.8)' : 'rgba(200,200,200,0.8)';
+            context.font = "12px Orbitron, monospace";
+            context.fillText("Press SPACE to restart", board.width / 2 - 80, board.height / 2 + 30);
+            gameover = true;
+        } else {
+            ball.x = boardwidth / 2;
+            ball.y = boardheight / 2;
+            ball.velocityx = ballvelocityx;
+            ball.velocityy = ballvelocityy;
+        }
     }
 
-    //bounce ball of player paddle
-    if (topcollision(ball, player) || bottomcollsion(ball, player)) {
-        ball.velocityy *= -1;
-    }
-    else if (leftcollision(ball, player) || rightcollision(ball, player)) {
-        ball.velocityx *= -1;
+    // Ball vs paddle
+    if (detectcollision(ball, player)) {
+        resolveBounce(ball, player);
+        collide.play();
     }
 
-    //blocks
-    context.fillStyle = "skyblue";
+    // Blocks
+    const blockColors = ['#ff0066', '#ff6600', '#ffcc00', '#00ff88', '#0095ff', '#cc00ff'];
     for (let i = 0; i < blockarray.length; i++) {
         let block = blockarray[i];
-        if (!block.break) {//only not broken block
-            if (topcollision(ball, block) || bottomcollsion(ball, block)) {
+        if (!block.break) {
+            if (detectcollision(ball, block)) {
+                if (!fireballActive) resolveBounce(ball, block);
+                collide.play();
                 block.break = true;
-                ball.velocityy *= -1;
-                blockcount -= 1;
+                blockcount--;
                 score += 100;
                 if (hiscore < score) {
                     hiscore = score;
                     localStorage.setItem("brickbreaker-hiscore", JSON.stringify(hiscore));
                 }
+                updateScoreDisplay();
+                dropPower(block.x + block.width / 2 - 26, block.y);
             }
-            else if (leftcollision(ball, block) || rightcollision(ball, block)) {
-                block.break = true;
-                ball.velocityx *= -1;
-                blockcount -= 1;
-                score += 100;
+
+            if (!block.break) {
+                let color = blockColors[block.row % blockColors.length];
+                context.shadowBlur = lm() ? 3 : 8;
+                context.shadowColor = color;
+                context.fillStyle = color;
+                context.fillRect(block.x, block.y, block.width, block.height);
+                context.shadowBlur = 0;
             }
-            context.fillRect(block.x, block.y, block.width, block.height);
         }
     }
 
-    //next level
-    if (blockcount == 0) {
-        context.fillfont = "20px serif";
-        context.fillText("Congratulation You Cleared Level", 80, 400);
-        setTimeout(() => {
+    // Dropping power-ups
+    for (let i = droppingPowers.length - 1; i >= 0; i--) {
+        const p = droppingPowers[i];
+        p.y += p.vy;
 
-        }, 1000);
+        context.shadowBlur = lm() ? 4 : 10;
+        context.shadowColor = p.color;
+        context.fillStyle = p.color;
+        context.beginPath();
+        context.roundRect(p.x, p.y, p.width, p.height, 6);
+        context.fill();
+        context.shadowBlur = 0;
+
+        context.fillStyle = '#000';
+        context.font = "bold 10px Orbitron, monospace";
+        context.fillText(p.label, p.x + 6, p.y + 15);
+
+        if (p.x < player.x + player.width &&
+            p.x + p.width > player.x &&
+            p.y < player.y + player.height &&
+            p.y + p.height > player.y) {
+            applyBrickPower(p.type);
+            droppingPowers.splice(i, 1);
+        } else if (p.y > boardheight) {
+            droppingPowers.splice(i, 1);
+        }
+    }
+
+    // Next level
+    if (blockcount === 0) {
+        context.shadowBlur = lm() ? 0 : 20;
+        context.shadowColor = lm() ? 'transparent' : '#00ff88';
+        context.fillStyle = lm() ? '#005c27' : '#00ff88';
+        context.font = "bold 22px Orbitron, monospace";
+        context.fillText("LEVEL CLEARED!", board.width / 2 - 100, board.height / 2);
+        context.shadowBlur = 0;
+        setTimeout(() => { }, 1000);
         score += 1000;
+        updateScoreDisplay();
         blockrows = Math.min(blockrows + 1, blockmaxrows);
         createblock();
     }
-
-    //score
-    context.font = "20px serif";
-    context.fillText("SCORE = " + score, 10, 25);//10 right and 25 down
-    //hiscore
-    context.font = "20px serif";
-    context.fillText("HI SCORE = " + hiscore, 390, 25);
 }
-
 
 function outbound(xpos) {
-    return (xpos < 0 || xpos + playerwidth > boardwidth);
-}
-function moveplayer(e) {
-    if (gameover) {
-        if (e.code == "Space") {
-            resetgame();
-        }
-    }
-    else if (e.code == "ArrowLeft") {
-        let nextplayerx = player.x - player.velocityX;
-        if (!outbound(nextplayerx)) {
-            player.x = nextplayerx;
-        }
-    }
-    else if (e.code == "ArrowRight") {
-        let nextplayerx = player.x + player.velocityX;
-        if (!outbound(nextplayerx)) {
-            player.x = nextplayerx;
-        }
-    }
+    return (xpos < 0 || xpos + player.width > boardwidth);
 }
 
+function moveplayer(e) {
+    if (e.code === "ArrowLeft" || e.code === "ArrowRight" || e.code === "Space") {
+        e.preventDefault();
+    }
+    if (e.code === "KeyP" || e.code === "Escape") {
+        togglePause();
+        return;
+    }
+    if (paused) return;
+    if (gameover) {
+        if (e.code === "Space") resetgame();
+    } else if (e.code === "ArrowLeft") {
+        let nextx = player.x - player.velocityX;
+        if (!outbound(nextx)) player.x = nextx;
+    } else if (e.code === "ArrowRight") {
+        let nextx = player.x + player.velocityX;
+        if (!outbound(nextx)) player.x = nextx;
+    }
+}
 
 function detectcollision(a, b) {
-    return a.x < b.x + b.width &&//a top left doest not reach b top right
-        a.x + a.width > b.x && //a top right not to b top left
-        a.y < b.y + b.height && //a top left not b bottom left
-        a.y + a.height > b.y;//a bottom left not b top left
+    return a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y;
 }
 
-//when ball collide block  from above
-function topcollision(ball, block) {//ball is above block
-    if (detectcollision(ball, block) && (ball.y + ball.height) > block.y) {
-        collide.play();
-        return true;
-    }
-    return false;
-}
-
-//when ball collide block from down
-function bottomcollsion(ball, block) {//ball is below block
-    if (detectcollision(ball, block) && (block.y + block.height) > ball.y) {
-        collide.play();
-        return true;
-    }
-    return false;
-}
-
-//when ball collide from left
-function rightcollision(ball, block) {
-    if (detectcollision(ball, block) && (ball.x + ball.width) > block.x) {
-        collide.play();
-        return true;
-    }
-    return false;
-}
-
-//when ball collide from right
-function leftcollision(ball, block) {//ball is right fomr block
-    if (detectcollision(ball, block) && (block.x + block.width) > ball.x) {
-        collide.play();
-        return true;
-    }
-    return false;
+// Resolves bounce by reflecting along the axis of least penetration
+function resolveBounce(ball, rect) {
+    const overlapLeft   = (ball.x + ball.width)  - rect.x;
+    const overlapRight  = (rect.x + rect.width)  - ball.x;
+    const overlapTop    = (ball.y + ball.height)  - rect.y;
+    const overlapBottom = (rect.y + rect.height)  - ball.y;
+    const minX = Math.min(overlapLeft, overlapRight);
+    const minY = Math.min(overlapTop, overlapBottom);
+    if (minX < minY) ball.velocityx *= -1;
+    else             ball.velocityy *= -1;
 }
 
 function createblock() {
-    blockarray = [];//clean array
+    blockarray = [];
     for (let c = 0; c < blockcolumns; c++) {
         for (let r = 0; r < blockrows; r++) {
             let block = {
-                x: blockx + c * blockwidth + c * 10,//to set 10 pixels apart
-                y: blocky + r * blockheight + r * 10,//to set 10 space 
+                x: blockx + c * blockwidth + c * 10,
+                y: blocky + r * blockheight + r * 10,
                 height: blockheight,
                 width: blockwidth,
                 break: false,
+                row: r,
             }
             blockarray.push(block);
         }
@@ -259,33 +419,42 @@ function createblock() {
 
 function resetgame() {
     gameover = false;
+    gameOverMusicPlayed = false;
+    paused = false;
+    const btn = document.getElementById('pauseBtn');
+    if (btn) { btn.textContent = '⏸ Pause'; btn.classList.remove('paused'); }
+    lives = 3;
+    droppingPowers = [];
+    fireballActive = false;
+    if (fireballTimer) { clearTimeout(fireballTimer); fireballTimer = null; }
+    if (wideTimer)     { clearTimeout(wideTimer);     wideTimer = null; }
+    if (slowTimer)     { clearTimeout(slowTimer);      slowTimer = null; }
     player = {
-        x: boardwidth / 2 - playerwidth / 2,//to make center
-        y: boardheight - playerheight - 5,//to make height of player (-5 to make sure not to stick to boundary )
+        x: boardwidth / 2 - playerwidth / 2,
+        y: boardheight - playerheight - 5,
         width: playerwidth,
         height: playerheight,
         velocityX: playervelocityX,
     }
     ball = {
-        x: boardwidth / 2,//inititl position
+        x: boardwidth / 2,
         y: boardheight / 2,
         width: ballwidth,
         height: ballheight,
         velocityx: ballvelocityx,
         velocityy: ballvelocityy,
     }
-    blockarray = [];
     score = 0;
     blockrows = 3;
+    updateScoreDisplay();
+    updateLivesDisplay();
+    updatePowerHUD();
     createblock();
+    music.play();
 }
 
 function resethiscore() {
     hiscore = 0;
     localStorage.setItem("brickbreaker-hiscore", JSON.stringify(hiscore));
+    updateScoreDisplay();
 }
-
-// const change = document.getElementById("switch");
-// change.addEventListener("click", () => {
-//     window.location.href = '/snake/index.html';
-// })

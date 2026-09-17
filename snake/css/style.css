@@ -1,88 +1,456 @@
 * {
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
 }
 
-.body {
-    background-image: url(./bg.jpg);
+body {
+    background: #0a0a0f;
     min-height: 100vh;
-    background-size: 100vw 100vh;
-    background-repeat: no-repeat;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: 'Orbitron', monospace;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 255, 128, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 128, 255, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.body {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 200px;
+}
+
+.game-title {
+    font-size: 52px;
+    font-weight: 900;
+    color: #00ff88;
+    text-shadow: 0 0 20px #00ff88, 0 0 50px #00ff88, 0 0 100px #00ff88;
+    letter-spacing: 8px;
+    text-align: center;
+    animation: titlePulse 3s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+    0%, 100% { text-shadow: 0 0 20px #00ff88, 0 0 50px #00ff88, 0 0 100px #00ff88; }
+    50% { text-shadow: 0 0 10px #00ff88, 0 0 25px #00ff88; }
+}
+
+.score-card {
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
+    backdrop-filter: blur(10px);
+}
+
+.hi-card {
+    background: rgba(255, 196, 0, 0.05);
+    border-color: rgba(255, 196, 0, 0.25);
+}
+
+.score-label {
+    font-size: 10px;
+    color: rgba(0, 255, 136, 0.6);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.hi-label {
+    color: rgba(255, 196, 0, 0.6);
+}
+
+.score-value {
+    font-size: 38px;
+    font-weight: 700;
+    color: #00ff88;
+    text-shadow: 0 0 10px #00ff88;
+}
+
+.hi-value {
+    color: #ffc400;
+    text-shadow: 0 0 10px #ffc400;
 }
 
 #board {
-    background-image: linear-gradient(rgb(168, 186, 76), yellow);
-    width: 90vmin;
-    height: 90vmin;
-    border: 1px solid black;
+    background:
+        linear-gradient(rgba(0, 255, 136, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 136, 0.04) 1px, transparent 1px),
+        #050510;
+    background-size: calc(100% / 18) calc(100% / 18);
+    width: 80vmin;
+    height: 80vmin;
+    border: 2px solid rgba(0, 255, 136, 0.35);
+    box-shadow:
+        0 0 30px rgba(0, 255, 136, 0.15),
+        0 0 60px rgba(0, 255, 136, 0.05),
+        inset 0 0 30px rgba(0, 255, 136, 0.03);
     display: grid;
-    /* to repeat 1frame width / height as row/column */
     grid-template-rows: repeat(18, 1fr);
     grid-template-columns: repeat(18, 1fr);
+    border-radius: 10px;
+    position: relative;
+    animation: borderGlow 4s ease-in-out infinite;
 }
 
+@keyframes borderGlow {
+    0%, 100% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.15), inset 0 0 30px rgba(0, 255, 136, 0.03); }
+    50% { box-shadow: 0 0 50px rgba(0, 255, 136, 0.3), inset 0 0 50px rgba(0, 255, 136, 0.06); }
+}
+
+/* Snake head — real snake look with direction-aware eyes */
 .head {
-    background: linear-gradient(red, blue);
-    min-height: 1fr;
-    min-width: 1fr;
-    border: .25vmin solid white;
-    border-radius: 12px;
+    position: relative;
+    background: radial-gradient(ellipse at 40% 35%, #afffcc, #00cc55);
+    border-radius: 40% 40% 35% 35%;
+    box-shadow: 0 0 10px #00ff88, 0 0 20px rgba(0,255,136,0.5);
+    border: 1px solid rgba(120, 255, 160, 0.5);
+    z-index: 2;
 }
 
+/* Eyes */
+.head::before,
+.head::after {
+    content: '';
+    position: absolute;
+    width: 22%;
+    height: 22%;
+    background: #111;
+    border-radius: 50%;
+    box-shadow: 0 0 2px #fff;
+}
+
+/* Facing right */
+.head.dir-right { border-radius: 35% 50% 50% 35%; }
+.head.dir-right::before { top: 20%; right: 12%; }
+.head.dir-right::after  { bottom: 20%; right: 12%; }
+
+/* Facing left */
+.head.dir-left { border-radius: 50% 35% 35% 50%; }
+.head.dir-left::before { top: 20%; left: 12%; }
+.head.dir-left::after  { bottom: 20%; left: 12%; }
+
+/* Facing up */
+.head.dir-up { border-radius: 50% 50% 35% 35%; }
+.head.dir-up::before { top: 12%; left: 18%; }
+.head.dir-up::after  { top: 12%; right: 18%; }
+
+/* Facing down */
+.head.dir-down { border-radius: 35% 35% 50% 50%; }
+.head.dir-down::before { bottom: 12%; left: 18%; }
+.head.dir-down::after  { bottom: 12%; right: 18%; }
+
+/* Snake body — scale texture */
 .snake {
-    background-color: purple;
-    border: .25vmin solid white;
-    border-radius: 12px;
-
+    background:
+        radial-gradient(ellipse at 50% 28%, rgba(255,255,255,0.18) 30%, transparent 70%),
+        linear-gradient(160deg, #2d9450, #1a5c30);
+    border-radius: 3px;
+    border: 1px solid rgba(0, 70, 20, 0.7);
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.12),
+        inset 0 -1px 2px rgba(0,0,0,0.35);
 }
 
+/* Food — apple emoji */
 .food {
-    background-color: yellow;
-    border: .25vmin solid white;
-    border-radius: 12px;
-    min-height: 1fr;
-    min-width: 1fr;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.6vmin;
+    line-height: 1;
+    animation: appleBounce 0.7s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 5px rgba(255, 60, 0, 0.9));
 }
 
-#scoreBox {
+@keyframes appleBounce {
+    from { transform: scale(0.8) rotate(-8deg); }
+    to   { transform: scale(1.05) rotate(5deg); }
+}
+
+.neon-btn {
+    background: transparent;
+    border: 1px solid rgba(0, 255, 136, 0.4);
+    color: #00ff88;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    width: 100%;
+}
+
+.neon-btn:hover {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: #00ff88;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+    color: #fff;
+}
+
+.switch-btn {
+    border-color: rgba(0, 149, 255, 0.4);
+    color: #0095ff;
+}
+
+.switch-btn:hover {
+    background: rgba(0, 149, 255, 0.1);
+    border-color: #0095ff;
+    box-shadow: 0 0 15px rgba(0, 149, 255, 0.4);
+    color: #fff;
+}
+
+a {
+    text-decoration: none;
+    display: block;
+}
+
+/* Power-up cell on the board */
+.powerup-cell {
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.8), var(--pu-color));
+    box-shadow: 0 0 8px var(--pu-color), 0 0 18px var(--pu-color);
+    animation: puPulse 0.5s ease-in-out infinite alternate;
+    margin: 1px;
+}
+
+@keyframes puPulse {
+    from { transform: scale(0.75); }
+    to   { transform: scale(1.0);  }
+}
+
+/* Shield — glowing aura on ALL snake segments */
+#board.shield-on .head,
+#board.shield-on .snake {
+    box-shadow:
+        0 0 6px #00ffff,
+        0 0 14px #00ffff,
+        inset 0 0 4px rgba(0,255,255,0.3) !important;
+    border-color: rgba(0, 255, 255, 0.9) !important;
+    animation: shieldPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes shieldPulse {
+    from { box-shadow: 0 0 4px #00ffff, 0 0 10px #00ffff; }
+    to   { box-shadow: 0 0 10px #00ffff, 0 0 24px #00ffff, 0 0 40px rgba(0,255,255,0.3); }
+}
+
+/* Extra glow on shielded head specifically */
+.shielded {
+    background: radial-gradient(ellipse at 40% 35%, #ccffff, #00ddcc) !important;
+    border-color: white !important;
+}
+
+/* Active power HUD in sidebar */
+.power-hud {
+    border: 1px solid currentColor;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Orbitron', monospace;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    animation: hudBlink 0.9s ease-in-out infinite alternate;
+}
+
+.power-hud span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.power-hud small {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+@keyframes hudBlink {
+    from { opacity: 0.6; }
+    to   { opacity: 1.0; }
+}
+
+/* ===== THEME TOGGLE BUTTON ===== */
+.theme-toggle {
+    border-color: rgba(255, 220, 50, 0.45);
+    color: #ffe566;
+}
+.theme-toggle:hover {
+    background: rgba(255, 220, 50, 0.1);
+    border-color: #ffe566;
+    box-shadow: 0 0 15px rgba(255, 220, 50, 0.35);
+    color: #fff;
+}
+
+/* ===== LIGHT MODE ===== */
+body.light-mode {
+    background: #f0f5f0;
+}
+body.light-mode::before {
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 180, 80, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 80, 200, 0.07) 0%, transparent 50%);
+}
+body.light-mode .game-title {
+    color: #005c27;
+    text-shadow: 0 0 15px rgba(0, 130, 60, 0.3);
+    animation: none;
+}
+body.light-mode .score-card {
+    background: rgba(255,255,255,0.9);
+    border-color: rgba(0, 140, 60, 0.25);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+body.light-mode .hi-card {
+    background: rgba(255,255,255,0.9);
+    border-color: rgba(160, 110, 0, 0.25);
+}
+body.light-mode .score-label { color: rgba(0, 80, 30, 0.6); }
+body.light-mode .hi-label    { color: rgba(130, 85, 0, 0.7); }
+body.light-mode .score-value { color: #005c27; text-shadow: none; }
+body.light-mode .hi-value    { color: #8b6000; text-shadow: none; }
+body.light-mode #board {
+    background:
+        linear-gradient(rgba(0, 140, 60, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 140, 60, 0.07) 1px, transparent 1px),
+        #f4fff8;
+    background-size: calc(100% / 18) calc(100% / 18);
+    border-color: rgba(0, 140, 60, 0.35);
+    box-shadow: 0 4px 24px rgba(0, 120, 50, 0.12);
+    animation: none;
+}
+body.light-mode .neon-btn {
+    border-color: rgba(0, 140, 60, 0.35);
+    color: #005c27;
+    background: rgba(255,255,255,0.75);
+}
+body.light-mode .neon-btn:hover {
+    background: rgba(0, 140, 60, 0.08);
+    border-color: #005c27;
+    box-shadow: 0 2px 12px rgba(0, 100, 40, 0.18);
+    color: #003d1a;
+}
+body.light-mode .switch-btn {
+    border-color: rgba(0, 80, 180, 0.35);
+    color: #003da8;
+}
+body.light-mode .switch-btn:hover {
+    background: rgba(0, 80, 180, 0.08);
+    border-color: #003da8;
+    box-shadow: 0 2px 12px rgba(0, 60, 160, 0.18);
+    color: #002070;
+}
+body.light-mode .theme-toggle {
+    border-color: rgba(160, 120, 0, 0.35);
+    color: #6b5000;
+    background: rgba(255,255,255,0.75);
+}
+body.light-mode .theme-toggle:hover {
+    background: rgba(160, 120, 0, 0.08);
+    border-color: #6b5000;
+    box-shadow: 0 2px 12px rgba(140, 100, 0, 0.18);
+}
+body.light-mode .power-hud {
+    background: rgba(255,255,255,0.8);
+}
+body.light-mode #board.shield-on .head,
+body.light-mode #board.shield-on .snake {
+    box-shadow: 0 0 5px #00aaaa, 0 0 12px #00aaaa !important;
+    border-color: rgba(0, 170, 170, 0.8) !important;
+    animation: shieldPulseLight 0.6s ease-in-out infinite alternate;
+}
+@keyframes shieldPulseLight {
+    from { box-shadow: 0 0 3px #00aaaa, 0 0 8px #00aaaa; }
+    to   { box-shadow: 0 0 8px #00aaaa, 0 0 18px #00aaaa; }
+}
+
+/* ===== PAUSE BUTTON ===== */
+.pause-btn {
+    border-color: rgba(0, 210, 210, 0.4);
+    color: #00d4d4;
+}
+.pause-btn:hover {
+    background: rgba(0, 210, 210, 0.1);
+    border-color: #00d4d4;
+    box-shadow: 0 0 15px rgba(0, 210, 210, 0.4);
+    color: #fff;
+}
+.pause-btn.paused {
+    border-color: rgba(255, 140, 0, 0.5);
+    color: #ff8c00;
+    animation: pauseBlink 0.8s ease-in-out infinite alternate;
+}
+@keyframes pauseBlink {
+    from { opacity: 0.7; }
+    to   { opacity: 1; box-shadow: 0 0 14px rgba(255, 140, 0, 0.5); }
+}
+
+/* ===== GAME AREA + PAUSE OVERLAY ===== */
+.game-area {
+    position: relative;
+}
+.pause-overlay {
     position: absolute;
-    top: 19px;
-    right: 9px;
-    font-size: 35px;
-    font-weight: bold;
+    inset: 0;
+    background: rgba(5, 5, 16, 0.9);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    z-index: 10;
+}
+.pause-overlay span {
+    font-size: 40px;
+    font-weight: 900;
+    color: #00ff88;
+    text-shadow: 0 0 20px #00ff88, 0 0 50px #00ff88;
+    letter-spacing: 6px;
+    font-family: 'Orbitron', monospace;
+}
+.pause-overlay small {
+    font-size: 12px;
+    color: rgba(160, 220, 160, 0.8);
+    letter-spacing: 3px;
+    font-family: 'Orbitron', monospace;
+    text-transform: uppercase;
 }
 
-#hiscoreBox {
-    position: absolute;
-    top: 69px;
-    right: 9px;
-    font-size: 35px;
-    font-weight: bold;
+/* Light mode overrides for pause */
+body.light-mode .pause-btn {
+    border-color: rgba(0, 140, 140, 0.35);
+    color: #007777;
 }
-
-#hiscoreBoxreset {
-    position: absolute;
-    top: 109px;
-    right: 9px;
-    font-size: 35px;
-    font-weight: bold;
+body.light-mode .pause-btn:hover {
+    background: rgba(0, 140, 140, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 120, 120, 0.18);
 }
-
-#button {
-    height: 30px;
-    width: 170px;
-    font-size: 15px;
-    background: linear-gradient(to right, blue, green);
-    color: white;
+body.light-mode .pause-overlay {
+    background: rgba(240, 245, 240, 0.93);
 }
-
-#switch {
-    position: absolute;
-    top: 149px;
-    right: 9px;
-    font-size: 35px;
-    font-weight: bold;
+body.light-mode .pause-overlay span {
+    color: #005c27;
+    text-shadow: 0 0 12px rgba(0, 140, 60, 0.3);
+}
+body.light-mode .pause-overlay small {
+    color: rgba(30, 80, 30, 0.8);
 }
