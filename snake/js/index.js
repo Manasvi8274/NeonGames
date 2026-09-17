@@ -38,7 +38,7 @@ function randomCell() {
 
 function spawnPowerup() {
     const p = POWERS[Math.floor(Math.random() * POWERS.length)];
-    powerup = { ...randomCell(), ...p, spawnTime: Date.now() };
+    powerup = { ...randomFreeCell(snakearr), ...p, spawnTime: Date.now() };
 }
 
 function applyPower(type) {
@@ -138,15 +138,54 @@ function isCollide(snakearr) {
     return false;
 }
 
+function isFreeCell(x, y, snakearr) {
+    if (x >= 18 || x <= 0 || y >= 18 || y <= 0) return false;
+    for (let i = 0; i < snakearr.length; i++) {
+        if (snakearr[i].x === x && snakearr[i].y === y) return false;
+    }
+    return true;
+}
+
+const DIRECTIONS = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: -1, y: 0 }, { x: 1, y: 0 }];
+
+// Picks a direction out of a shield-save that avoids reversing 180 into the
+// path just travelled, preferring a perpendicular cell that's actually free.
+function pickShieldEscapeDir(head, failedDir, snakearr) {
+    const reverseDir = { x: -failedDir.x, y: -failedDir.y };
+    const candidates = DIRECTIONS.filter(d =>
+        !(d.x === failedDir.x && d.y === failedDir.y) &&
+        !(d.x === reverseDir.x && d.y === reverseDir.y)
+    );
+    for (const d of candidates) {
+        if (isFreeCell(head.x + d.x, head.y + d.y, snakearr)) return d;
+    }
+    // Dead end: only the reverse direction is free
+    if (isFreeCell(head.x + reverseDir.x, head.y + reverseDir.y, snakearr)) return reverseDir;
+    return { x: 0, y: 0 };
+}
+
+function randomFreeCell(snakearr) {
+    const occupied = new Set(snakearr.map(s => `${s.x},${s.y}`));
+    const free = [];
+    for (let x = 2; x <= 16; x++) {
+        for (let y = 2; y <= 16; y++) {
+            if (!occupied.has(`${x},${y}`)) free.push({ x, y });
+        }
+    }
+    if (free.length === 0) return randomCell();
+    return free[Math.floor(Math.random() * free.length)];
+}
+
 function gameEngine() {
     if (isCollide(snakearr)) {
         if (shieldActive) {
-            // Use shield: undo last move and stop
+            // Use shield: undo the colliding move, then auto-steer onto a free path
             shieldActive = false;
             document.getElementById('board').classList.remove('shield-on');
-            snakearr[0].x -= InputDir.x;
-            snakearr[0].y -= InputDir.y;
-            InputDir = { x: 0, y: 0 };
+            const failedDir = { x: InputDir.x, y: InputDir.y };
+            snakearr[0].x -= failedDir.x;
+            snakearr[0].y -= failedDir.y;
+            InputDir = pickShieldEscapeDir(snakearr[0], failedDir, snakearr);
         } else {
             gameover_sound.play();
             music_sound.pause();
@@ -178,7 +217,7 @@ function gameEngine() {
         }
         scoreBox.innerHTML = score;
         snakearr.unshift({ x: snakearr[0].x + InputDir.x, y: snakearr[0].y + InputDir.y });
-        food = randomCell();
+        food = randomFreeCell(snakearr);
         if (foodEaten % 5 === 0) spawnPowerup();
     }
 
