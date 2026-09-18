@@ -6,8 +6,9 @@ let music = new Audio("js/music.mp3");
 
 //var
 let board;
-let boardwidth = window.innerWidth / 2.7;
-let boardheight = window.innerHeight / 1.2;
+const isNarrowScreen = window.innerWidth <= 760;
+let boardwidth = isNarrowScreen ? window.innerWidth - 24 : window.innerWidth / 2.7;
+let boardheight = isNarrowScreen ? window.innerHeight * 0.5 : window.innerHeight / 1.2;
 let context;
 
 //player
@@ -229,6 +230,7 @@ window.onload = function () {
 
     requestAnimationFrame(update);
     document.addEventListener("keydown", moveplayer);
+    setupTouchControls();
     createblock();
 
     GameChrome.boot({
@@ -436,6 +438,40 @@ function moveplayer(e) {
         let nextx = player.x + player.velocityX;
         if (!outbound(nextx)) player.x = nextx;
     }
+}
+
+// Drag-to-follow paddle control, plus on-screen buttons, for touch devices.
+function setupTouchControls() {
+    board.addEventListener('touchmove', (e) => {
+        if (!started || paused || gameover) return;
+        e.preventDefault();
+        const rect = board.getBoundingClientRect();
+        const scaleX = board.width / rect.width;
+        const touchX = (e.touches[0].clientX - rect.left) * scaleX;
+        const nextx = touchX - player.width / 2;
+        player.x = Math.max(0, Math.min(boardwidth - player.width, nextx));
+    }, { passive: false });
+
+    const bindHold = (id, dir) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let repeatTimer = null; // own timer per button — presses on the other button must not clobber this one
+        const step = () => {
+            if (!started || paused || gameover) return;
+            const nextx = player.x + dir * player.velocityX;
+            if (!outbound(nextx)) player.x = nextx;
+        };
+        el.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            step();
+            repeatTimer = setInterval(step, 90);
+        }, { passive: false });
+        const stop = (e) => { if (e) e.preventDefault(); if (repeatTimer) { clearInterval(repeatTimer); repeatTimer = null; } };
+        el.addEventListener('touchend', stop, { passive: false });
+        el.addEventListener('touchcancel', stop, { passive: false });
+    };
+    bindHold('btnLeft', -1);
+    bindHold('btnRight', 1);
 }
 
 function detectcollision(a, b) {

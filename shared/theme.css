@@ -192,6 +192,67 @@ body::before {
 
 a { text-decoration: none; display: block; }
 
+/* ===== TOUCH CONTROLS ===== */
+.touch-controls {
+    display: none;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+.touch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    min-height: 52px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 12%, rgba(10,10,16,0.7));
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    color: var(--accent);
+    font-size: 22px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    touch-action: manipulation;
+}
+.touch-btn:active {
+    background: color-mix(in srgb, var(--accent) 30%, rgba(10,10,16,0.7));
+    transform: scale(0.94);
+}
+.touch-btn.wide { min-width: 84px; font-size: 12px; letter-spacing: 1px; font-family: 'Orbitron', monospace; }
+.touch-dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 52px);
+    grid-template-rows: repeat(2, 52px);
+    gap: 6px;
+}
+.touch-dpad .touch-btn.up    { grid-column: 2; grid-row: 1; }
+.touch-dpad .touch-btn.left  { grid-column: 1; grid-row: 2; }
+.touch-dpad .touch-btn.down  { grid-column: 2; grid-row: 2; }
+.touch-dpad .touch-btn.right { grid-column: 3; grid-row: 2; }
+
+body.light-mode .touch-btn {
+    background: color-mix(in srgb, var(--accent) 12%, rgba(255,255,255,0.85));
+    color: color-mix(in srgb, var(--accent) 55%, black);
+}
+
+/* Only show touch controls on touch-capable devices, so mouse/keyboard
+   users never see dead UI taking up space. */
+@media (hover: none) and (pointer: coarse) {
+    .touch-controls { display: flex; }
+}
+
+/* ===== NARROW SCREENS: stack sidebar above the game instead of beside it ===== */
+@media (max-width: 760px) {
+    html, body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100%; }
+    body { align-items: flex-start; padding: 14px 0 24px; }
+    .body { flex-direction: column; align-items: center; gap: 14px; width: 100%; padding: 0 12px; box-sizing: border-box; }
+    .sidebar { width: 100%; max-width: 440px; min-width: 0; }
+    .game-area { width: 100%; display: flex; flex-direction: column; align-items: center; }
+}
+
 .power-hud {
     border: 1px solid currentColor;
     border-radius: 8px;

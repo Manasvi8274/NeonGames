@@ -5,8 +5,13 @@
 // shot is never unfair the way an unbounded random value could be — the
 // same principle behind Snake's randomFreeCell fix earlier this session.
 
-let boardwidth = Math.max(600, Math.min(900, window.innerWidth - 320));
-let boardheight = Math.max(400, Math.min(560, window.innerHeight - 160));
+const archeryIsNarrowScreen = window.innerWidth <= 760;
+let boardwidth = archeryIsNarrowScreen
+    ? Math.min(900, window.innerWidth - 24)
+    : Math.max(600, Math.min(900, window.innerWidth - 320));
+let boardheight = archeryIsNarrowScreen
+    ? Math.max(300, window.innerHeight * 0.4)
+    : Math.max(400, Math.min(560, window.innerHeight - 160));
 let board, context;
 
 const GRAVITY = 0.32;
@@ -564,6 +569,26 @@ function onMouseUp() {
     fireArrow();
 }
 
+// Touch equivalents — press to start charging where you touch (also sets
+// the aim angle immediately, unlike mouse which needs a prior hover), drag
+// to adjust angle, release to fire.
+function onTouchStart(e) {
+    e.preventDefault();
+    const rect = board.getBoundingClientRect();
+    mouseY = e.touches[0].clientY - rect.top;
+    onMouseDown();
+}
+function onTouchMove(e) {
+    if (!aiming) return;
+    e.preventDefault();
+    const rect = board.getBoundingClientRect();
+    mouseY = e.touches[0].clientY - rect.top;
+}
+function onTouchEnd(e) {
+    e.preventDefault();
+    onMouseUp();
+}
+
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         e.preventDefault();
@@ -590,6 +615,10 @@ window.onload = function () {
     board.addEventListener('mousemove', onMouseMove);
     board.addEventListener('mousedown', onMouseDown);
     board.addEventListener('mouseup', onMouseUp);
+    board.addEventListener('touchstart', onTouchStart, { passive: false });
+    board.addEventListener('touchmove', onTouchMove, { passive: false });
+    board.addEventListener('touchend', onTouchEnd, { passive: false });
+    board.addEventListener('touchcancel', onTouchEnd, { passive: false });
 
     requestAnimationFrame(loop);
 

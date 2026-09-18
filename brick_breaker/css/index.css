@@ -111,6 +111,7 @@ body::before {
 
 /* Canvas */
 #board {
+    touch-action: none;
     border: 2px solid rgba(0, 149, 255, 0.35);
     border-radius: 10px;
     box-shadow:
@@ -299,5 +300,45 @@ body.light-mode #board {
     border-color: rgba(0, 80, 200, 0.3);
     box-shadow: 0 4px 24px rgba(0, 60, 180, 0.12);
     animation: none;
+}
+
+/* ===== TOUCH CONTROLS ===== */
+.touch-controls {
+    display: none;
+    gap: 14px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+.touch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    min-height: 52px;
+    border-radius: 12px;
+    background: rgba(0, 149, 255, 0.12);
+    border: 1px solid rgba(0, 149, 255, 0.45);
+    color: #0095ff;
+    font-size: 22px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    touch-action: manipulation;
+}
+.touch-btn:active { background: rgba(0, 149, 255, 0.3); transform: scale(0.94); }
+body.light-mode .touch-btn { background: rgba(0, 80, 200, 0.1); color: #0044aa; }
+@media (hover: none) and (pointer: coarse) {
+    .touch-controls { display: flex; }
+}
+
+/* ===== NARROW SCREENS: stack sidebar above the game instead of beside it ===== */
+@media (max-width: 760px) {
+    html, body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100%; }
+    body { align-items: flex-start; padding: 14px 0 24px; }
+    .body { flex-direction: column; align-items: center; gap: 14px; width: 100%; padding: 0 12px; box-sizing: border-box; }
+    .sidebar { width: 100%; max-width: 440px; min-width: 0; }
+    .game-area { width: 100%; display: flex; flex-direction: column; align-items: center; }
 }
 body.light-mode .power-hud { background: rgba(255,255,255,0.8); }

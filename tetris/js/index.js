@@ -419,26 +419,71 @@ function loop(now) {
     if (nextQueue.length) drawPreview(nextCtx, nextQueue[0]);
 }
 
+// Shared by keyboard and the on-screen touch buttons.
+function canAct() { return started && !paused && !gameOver && !clearingRows.length; }
+function actionMoveLeft()  { if (canAct() && tryMove(-1, 0)) SFX.play('move'); }
+function actionMoveRight() { if (canAct() && tryMove(1, 0)) SFX.play('move'); }
+function actionRotateCW()  { if (canAct()) tryRotate(1); }
+function actionRotateCCW() { if (canAct()) tryRotate(-1); }
+function actionHardDrop()  { if (canAct()) hardDrop(); }
+function actionHold()      { if (canAct()) hold(); }
+function actionSoftDropStart() { if (canAct()) softDropping = true; }
+function actionSoftDropEnd()   { softDropping = false; }
+
 function onKeyDown(e) {
     if (e.key === 'Escape') { e.preventDefault(); togglePause(); return; }
-    if (!started || paused || gameOver || clearingRows.length) return;
+    if (!canAct()) return;
     switch (e.code) {
-        case 'ArrowLeft': e.preventDefault(); if (tryMove(-1, 0)) SFX.play('move'); break;
-        case 'ArrowRight': e.preventDefault(); if (tryMove(1, 0)) SFX.play('move'); break;
-        case 'ArrowDown': e.preventDefault(); softDropping = true; break;
-        case 'ArrowUp': case 'KeyX': e.preventDefault(); tryRotate(1); break;
-        case 'KeyZ': e.preventDefault(); tryRotate(-1); break;
-        case 'Space': e.preventDefault(); hardDrop(); break;
-        case 'KeyC': case 'ShiftLeft': case 'ShiftRight': e.preventDefault(); hold(); break;
+        case 'ArrowLeft': e.preventDefault(); actionMoveLeft(); break;
+        case 'ArrowRight': e.preventDefault(); actionMoveRight(); break;
+        case 'ArrowDown': e.preventDefault(); actionSoftDropStart(); break;
+        case 'ArrowUp': case 'KeyX': e.preventDefault(); actionRotateCW(); break;
+        case 'KeyZ': e.preventDefault(); actionRotateCCW(); break;
+        case 'Space': e.preventDefault(); actionHardDrop(); break;
+        case 'KeyC': case 'ShiftLeft': case 'ShiftRight': e.preventDefault(); actionHold(); break;
     }
 }
 function onKeyUp(e) {
-    if (e.code === 'ArrowDown') softDropping = false;
+    if (e.code === 'ArrowDown') actionSoftDropEnd();
+}
+
+// Binds a touch button to an action, firing on touchstart (not click) for
+// zero-latency response, and supporting press-and-hold for repeatable
+// actions like moving/soft-dropping.
+function bindTouchButton(id, onDown, onUp, repeatMs) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let repeatTimer = null;
+    const start = (e) => {
+        e.preventDefault();
+        onDown();
+        if (repeatMs) {
+            repeatTimer = setInterval(onDown, repeatMs);
+        }
+    };
+    const end = (e) => {
+        if (e) e.preventDefault();
+        if (repeatTimer) { clearInterval(repeatTimer); repeatTimer = null; }
+        if (onUp) onUp();
+    };
+    el.addEventListener('touchstart', start, { passive: false });
+    el.addEventListener('touchend', end, { passive: false });
+    el.addEventListener('touchcancel', end, { passive: false });
+}
+
+function setupTouchControls() {
+    bindTouchButton('btnLeft', actionMoveLeft, null, 130);
+    bindTouchButton('btnRight', actionMoveRight, null, 130);
+    bindTouchButton('btnDown', actionSoftDropStart, actionSoftDropEnd);
+    bindTouchButton('btnRotate', actionRotateCW);
+    bindTouchButton('btnDrop', actionHardDrop);
+    bindTouchButton('btnHold', actionHold);
 }
 
 function resize() {
-    const maxH = Math.min(window.innerHeight - 140, 720);
-    cellSize = Math.floor(maxH / ROWS);
+    const maxH = Math.min(window.innerHeight - (window.innerWidth <= 760 ? 260 : 140), 720);
+    const maxW = window.innerWidth - 24;
+    cellSize = Math.max(10, Math.floor(Math.min(maxH / ROWS, maxW / COLS)));
     board.width = cellSize * COLS;
     board.height = cellSize * ROWS;
 }
@@ -459,6 +504,8 @@ function init() {
 
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('resize', resize);
+    setupTouchControls();
 
     requestAnimationFrame(loop);
 

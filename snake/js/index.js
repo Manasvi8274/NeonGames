@@ -310,21 +310,57 @@ if (hiscore === null) {
 
 window.requestAnimationFrame(main);
 
-window.addEventListener('keydown', e => {
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
-    if (e.key === "Escape") { togglePause(); return; }
+// Shared by keyboard, the on-screen D-pad, and board swipes.
+function setDirection(x, y) {
     if (!started || gameOver || paused) return;
     move_sound.play();
     if (!musicStarted) { music_sound.play(); musicStarted = true; }
+    InputDir.x = x;
+    InputDir.y = y;
+}
+
+window.addEventListener('keydown', e => {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+    if (e.key === "Escape") { togglePause(); return; }
     switch (e.key) {
-        case "ArrowUp":    InputDir.x = 0;  InputDir.y = -1; break;
-        case "ArrowDown":  InputDir.x = 0;  InputDir.y = 1;  break;
-        case "ArrowLeft":  InputDir.x = -1; InputDir.y = 0;  break;
-        case "ArrowRight": InputDir.x = 1;  InputDir.y = 0;  break;
+        case "ArrowUp":    setDirection(0, -1); break;
+        case "ArrowDown":  setDirection(0, 1);  break;
+        case "ArrowLeft":  setDirection(-1, 0); break;
+        case "ArrowRight": setDirection(1, 0);  break;
         case "p":
         case "P":          togglePause(); return;
     }
 });
+
+// On-screen D-pad for touch devices.
+[
+    ['dpadUp', 0, -1], ['dpadDown', 0, 1], ['dpadLeft', -1, 0], ['dpadRight', 1, 0],
+].forEach(([id, x, y]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); setDirection(x, y); }, { passive: false });
+});
+
+// Swipe-on-board as an alternate control scheme.
+(function setupSwipe() {
+    const el = document.getElementById('board');
+    if (!el) return;
+    let sx = 0, sy = 0, active = false;
+    el.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY; active = true;
+    }, { passive: true });
+    el.addEventListener('touchmove', (e) => { if (active) e.preventDefault(); }, { passive: false });
+    el.addEventListener('touchend', (e) => {
+        if (!active) return;
+        active = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - sx, dy = t.clientY - sy;
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return; // too small — ignore
+        if (Math.abs(dx) > Math.abs(dy)) setDirection(dx > 0 ? 1 : -1, 0);
+        else setDirection(0, dy > 0 ? 1 : -1);
+    }, { passive: true });
+})();
 
 GameChrome.boot({
     container: '.game-area',
