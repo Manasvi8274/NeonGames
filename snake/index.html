@@ -34,7 +34,20 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
     <script src="../shared/firebase-config.js" defer></script>
     <script src="../shared/leaderboard.js" defer></script>
-    <script>document.addEventListener('DOMContentLoaded', function () { Leaderboard.init(firebaseConfig); Leaderboard.syncHiscoreDisplay('snake'); });</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Leaderboard.init(firebaseConfig);
+            // Snake's own render loop redraws #hiscoreBox from the local
+            // `hiscore` variable on every single animation frame (see
+            // js/index.js's main()), so writing to the DOM directly here
+            // (like every other game does via syncHiscoreDisplay) would get
+            // overwritten within milliseconds. Update the variable instead
+            // and let that existing loop pick it up naturally.
+            Leaderboard.getTopScores('snake', 1).then(function (top) {
+                if (top.length && top[0].score > hiscore) hiscore = top[0].score;
+            });
+        });
+    </script>
     <script src="../shared/sfx.js" defer></script>
     <script src="../shared/chrome.js" defer></script>
     <script src="js/index.js" defer></script>
