@@ -284,18 +284,54 @@ function roundRect(ctx, x, y, w, h, r) {
     ctx.closePath();
 }
 
+// Lightens (positive amt) or darkens (negative) a "#rrggbb" color.
+function shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const clamp = (v) => Math.max(0, Math.min(255, v));
+    const r = clamp(((n >> 16) & 255) + amt);
+    const g = clamp(((n >> 8) & 255) + amt);
+    const b = clamp((n & 255) + amt);
+    return `rgb(${r},${g},${b})`;
+}
+
+// Draws a beveled 3D block: a classic raised-button bevel (light top/left
+// strip, dark bottom/right strip framing a flat face) rather than a flat
+// fill, so locked pieces read as solid cubes instead of colored squares.
 function drawCell(ctx, px, py, size, color, alpha) {
+    const a = alpha != null ? alpha : 1;
+    const x0 = px + 1, y0 = py + 1, s = size - 2;
+    const b = Math.max(2, s * 0.18);
+    const x1 = x0 + s, y1 = y0 + s;
+    const ix0 = x0 + b, iy0 = y0 + b, ix1 = x1 - b, iy1 = y1 - b;
+
     ctx.save();
-    ctx.globalAlpha = alpha != null ? alpha : 1;
-    ctx.shadowBlur = 8;
+    ctx.globalAlpha = a;
+    ctx.shadowBlur = 7;
     ctx.shadowColor = color;
+
+    // Light bevel (top + left strip)
+    ctx.beginPath();
+    ctx.moveTo(x0, y0); ctx.lineTo(x1, y0); ctx.lineTo(ix1, iy0);
+    ctx.lineTo(ix0, iy0); ctx.lineTo(ix0, iy1); ctx.lineTo(x0, y1);
+    ctx.closePath();
+    ctx.fillStyle = shade(color, 60);
+    ctx.fill();
+
+    // Dark bevel (bottom + right strip)
+    ctx.beginPath();
+    ctx.moveTo(x1, y0); ctx.lineTo(x1, y1); ctx.lineTo(x0, y1);
+    ctx.lineTo(ix0, iy1); ctx.lineTo(ix1, iy1); ctx.lineTo(ix1, iy0);
+    ctx.closePath();
+    ctx.fillStyle = shade(color, -55);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Flat face
     ctx.fillStyle = color;
-    roundRect(ctx, px + 1, py + 1, size - 2, size - 2, 3);
-    ctx.fill();
-    ctx.globalAlpha = (alpha != null ? alpha : 1) * 0.35;
+    ctx.fillRect(ix0, iy0, ix1 - ix0, iy1 - iy0);
+    ctx.globalAlpha = a * 0.4;
     ctx.fillStyle = '#fff';
-    roundRect(ctx, px + 3, py + 3, size - 6, (size - 6) * 0.35, 2);
-    ctx.fill();
+    ctx.fillRect(ix0 + 1, iy0 + 1, Math.max(0, ix1 - ix0 - 2), Math.max(0, (iy1 - iy0) * 0.3));
     ctx.restore();
 }
 

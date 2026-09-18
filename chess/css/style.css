@@ -21,15 +21,28 @@
     position: relative;
     user-select: none;
     transition: background 0.15s;
+    box-shadow: inset 0 -3px 6px rgba(0,0,0,0.25), inset 0 2px 2px rgba(255,255,255,0.06);
 }
 .square.light { background: #2a2a3a; }
 .square.dark  { background: #17171f; }
 body.light-mode .square.light { background: #eef0fa; }
 body.light-mode .square.dark  { background: #c3c8e0; }
 
-.square.piece-w { color: #fdfdfd; text-shadow: 0 0 6px rgba(255,255,255,0.55); }
-.square.piece-b { color: #0a0a10; text-shadow: 0 0 4px rgba(0,0,0,0.55); }
-body.light-mode .square.piece-b { text-shadow: none; }
+.square.piece-w {
+    color: #fdfdfd;
+    text-shadow: 0 1px 0 #c9c9d8, 0 2px 0 #a8a8bd, 0 3px 1px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.45);
+    transition: transform 0.15s ease;
+}
+.square.piece-b {
+    color: #17171f;
+    text-shadow: 0 1px 0 #3a3a4a, 0 2px 0 #24242e, 0 3px 1px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.55);
+    transition: transform 0.15s ease;
+}
+body.light-mode .square.piece-b {
+    text-shadow: 0 1px 0 #6a6a7a, 0 2px 1px rgba(0,0,0,0.35), 0 3px 6px rgba(0,0,0,0.3);
+}
+.square.piece-w:hover, .square.piece-b:hover { transform: translateY(-3px) scale(1.08); }
+.square.selected.piece-w, .square.selected.piece-b { transform: translateY(-5px) scale(1.12); }
 
 .square:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 

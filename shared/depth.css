@@ -1,0 +1,77 @@
+/* Shared "3D arcade" treatment. Two flavors:
+   - .tilt-3d-board: for DOM click-target boards (chess/snake/tic-tac-toe).
+     CSS 3D transforms don't change hit-testing, so click handlers work
+     unmodified at any angle — safe to tilt boldly.
+   - .arcade-bezel / .tilt-3d-canvas: for <canvas> games. Games driven purely
+     by keyboard or position-agnostic clicks (Tetris, Brick Breaker, Bottle
+     Shooting) get an actual tilt. Archery reads continuous mouse Y position
+     off the canvas's bounding box for aim angle — tilting it would distort
+     that mapping — so it gets the bezel frame only, no rotation. */
+
+.tilt-3d-wrap {
+    perspective: 1600px;
+    perspective-origin: 50% 20%;
+    padding-bottom: 28px;
+}
+
+.tilt-3d-board {
+    transform: rotateX(22deg);
+    transform-origin: 50% 0%;
+    transform-style: preserve-3d;
+    box-shadow: 0 46px 60px -28px rgba(0, 0, 0, 0.65);
+    transition: transform 0.4s ease;
+}
+
+.arcade-bezel {
+    position: relative;
+    padding: 14px;
+    border-radius: 18px;
+    background: linear-gradient(155deg, #2b2b38, #14141c 55%, #0a0a10);
+    box-shadow:
+        0 30px 50px -18px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.arcade-bezel::before {
+    content: '';
+    position: absolute;
+    inset: 6px 6px auto 6px;
+    height: 40%;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), transparent);
+    pointer-events: none;
+}
+.arcade-bezel .tilt-3d-wrap {
+    padding-bottom: 0;
+}
+
+.tilt-3d-canvas {
+    transform: rotateX(5deg);
+    transform-origin: 50% 100%;
+    display: block;
+}
+
+body.light-mode .arcade-bezel {
+    background: linear-gradient(155deg, #dfe3f2, #c7cce2 55%, #b7bcd6);
+    border-color: rgba(0, 0, 0, 0.06);
+    box-shadow:
+        0 30px 50px -18px rgba(40, 40, 80, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.12);
+}
+
+body.light-mode .tilt-3d-board {
+    box-shadow: 0 40px 55px -28px rgba(40, 40, 90, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tilt-3d-board, .tilt-3d-canvas { transition: none; }
+}
+
+/* Small screens: flatten the tilt so nothing crowds off-frame. */
+@media (max-width: 900px), (max-height: 700px) {
+    .tilt-3d-board { transform: rotateX(10deg); }
+    .tilt-3d-canvas { transform: rotateX(2deg); }
+    .tilt-3d-wrap { padding-bottom: 14px; }
+}

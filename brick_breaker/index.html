@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="../shared/chrome.css">
+    <link rel="stylesheet" href="../shared/depth.css">
     <link rel="stylesheet" href="../shared/leaderboard-modal.css">
     <link rel="stylesheet" href="../shared/compact-media.css">
     <style>:root { --accent: #0095ff; --hi-color: #ffc400; } .game-area { position: relative; }</style>
@@ -65,7 +66,11 @@
             </a>
         </div>
         <div class="game-area">
-            <canvas id="board"></canvas>
+            <div class="arcade-bezel">
+                <div class="tilt-3d-wrap">
+                    <canvas id="board" class="tilt-3d-canvas"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </body>

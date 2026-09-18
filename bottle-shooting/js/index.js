@@ -210,6 +210,16 @@ function hexToRgb(hex) {
     return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
+// Lightens (positive amt) or darkens (negative) a "#rrggbb" color.
+function shade(hex, amt) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    const clamp = (v) => Math.max(0, Math.min(255, v));
+    const r = clamp(((n >> 16) & 255) + amt);
+    const g = clamp(((n >> 8) & 255) + amt);
+    const b = clamp((n & 255) + amt);
+    return `rgb(${r},${g},${b})`;
+}
+
 // Returns the bottle object under (x, y), or null. Callers that need to hold
 // on to the result across a delay (e.g. a bullet's travel time) must keep the
 // object reference itself, not an index — bottles.splice() during that delay
@@ -277,6 +287,17 @@ function drawBottle(b, now) {
     const rgb = hexToRgb(accentColor);
     const glow = `rgba(${rgb.r},${rgb.g},${rgb.b},0.6)`;
     const hot = bottleUnderPoint(reticle.x, reticle.y) === b;
+
+    // Grounding shadow — sells the bottle as standing ON the shelf, not
+    // floating flat against it.
+    context.save();
+    context.globalAlpha = 0.35;
+    context.fillStyle = '#000';
+    context.beginPath();
+    context.ellipse(b.x + b.w / 2, b.y + b.h + 2, b.w * 0.48, b.h * 0.09, 0, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+
     context.save();
     context.shadowBlur = hot ? 26 : 14;
     context.shadowColor = hot ? '#ffe566' : glow;
@@ -284,8 +305,14 @@ function drawBottle(b, now) {
     const bodyY = b.y + b.h * 0.28;
     const bodyH = b.h * 0.72;
 
-    // body
-    context.fillStyle = lm() ? '#5533aa' : accentColor;
+    // body — cylindrical glass shading via a left-to-right gradient
+    const baseColor = lm() ? '#5533aa' : accentColor;
+    const bodyGrad = context.createLinearGradient(b.x, 0, b.x + b.w, 0);
+    bodyGrad.addColorStop(0, shade(baseColor, -40));
+    bodyGrad.addColorStop(0.35, shade(baseColor, 35));
+    bodyGrad.addColorStop(0.6, baseColor);
+    bodyGrad.addColorStop(1, shade(baseColor, -25));
+    context.fillStyle = bodyGrad;
     roundRect(b.x, bodyY, b.w, bodyH, Math.min(8, b.w * 0.2));
     context.fill();
     // glossy highlight

@@ -86,6 +86,41 @@ const BRICK_POWERS = [
 
 function lm() { return document.body.classList.contains('light-mode'); }
 
+// Lightens (positive amt) or darkens (negative) a "#rrggbb" color.
+function shade(hex, amt) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    const clamp = (v) => Math.max(0, Math.min(255, v));
+    const r = clamp(((n >> 16) & 255) + amt);
+    const g = clamp(((n >> 8) & 255) + amt);
+    const b = clamp((n & 255) + amt);
+    return `rgb(${r},${g},${b})`;
+}
+
+// Beveled 3D block: light top/left strip + dark bottom/right strip framing
+// a flat face, instead of a flat fillRect — reads as a raised cube/paddle.
+function drawBevelRect(x, y, w, h, color) {
+    const b = Math.max(1.5, Math.min(w, h) * 0.22);
+    const x1 = x + w, y1 = y + h;
+    const ix0 = x + b, iy0 = y + b, ix1 = Math.max(ix0, x1 - b), iy1 = Math.max(iy0, y1 - b);
+
+    context.beginPath();
+    context.moveTo(x, y); context.lineTo(x1, y); context.lineTo(ix1, iy0);
+    context.lineTo(ix0, iy0); context.lineTo(ix0, iy1); context.lineTo(x, y1);
+    context.closePath();
+    context.fillStyle = shade(color, 55);
+    context.fill();
+
+    context.beginPath();
+    context.moveTo(x1, y); context.lineTo(x1, y1); context.lineTo(x, y1);
+    context.lineTo(ix0, iy1); context.lineTo(ix1, iy1); context.lineTo(ix1, iy0);
+    context.closePath();
+    context.fillStyle = shade(color, -50);
+    context.fill();
+
+    context.fillStyle = color;
+    context.fillRect(ix0, iy0, Math.max(0, ix1 - ix0), Math.max(0, iy1 - iy0));
+}
+
 // DOM updates
 function updateScoreDisplay() {
     const s = document.getElementById('scoreBox');
@@ -255,20 +290,27 @@ function update() {
         : (wideTimer ? '#00ffcc' : '#0095ff');
     context.shadowBlur = lm() ? 8 : 20;
     context.shadowColor = paddleColor;
-    context.fillStyle = paddleColor;
-    context.fillRect(player.x, player.y, player.width, player.height);
+    drawBevelRect(player.x, player.y, player.width, player.height, paddleColor);
     context.shadowBlur = 0;
 
-    // Ball
+    // Ball — radial-gradient sphere shading instead of a flat disc
     ball.x += ball.velocityx;
     ball.y += ball.velocityy;
     let ballColor = fireballActive ? '#ff6600' : (lm() ? '#1a1a55' : '#ffffff');
     let ballGlow  = fireballActive ? '#ff3300' : (lm() ? '#3333aa' : '#ffffff');
+    const ballCx = ball.x + ball.width / 2, ballCy = ball.y + ball.height / 2, ballR = ball.width / 2;
     context.shadowBlur = fireballActive ? 30 : (lm() ? 8 : 20);
     context.shadowColor = ballGlow;
-    context.fillStyle = ballColor;
+    const ballGrad = context.createRadialGradient(
+        ballCx - ballR * 0.35, ballCy - ballR * 0.35, ballR * 0.1,
+        ballCx, ballCy, ballR
+    );
+    ballGrad.addColorStop(0, '#ffffff');
+    ballGrad.addColorStop(0.5, ballColor);
+    ballGrad.addColorStop(1, fireballActive ? '#cc4400' : (lm() ? '#1a1a55' : '#c8c8d8'));
+    context.fillStyle = ballGrad;
     context.beginPath();
-    context.arc(ball.x + ball.width / 2, ball.y + ball.height / 2, ball.width / 2, 0, Math.PI * 2);
+    context.arc(ballCx, ballCy, ballR, 0, Math.PI * 2);
     context.fill();
     context.shadowBlur = 0;
 
@@ -324,8 +366,7 @@ function update() {
                 let color = blockColors[block.row % blockColors.length];
                 context.shadowBlur = lm() ? 3 : 8;
                 context.shadowColor = color;
-                context.fillStyle = color;
-                context.fillRect(block.x, block.y, block.width, block.height);
+                drawBevelRect(block.x, block.y, block.width, block.height, color);
                 context.shadowBlur = 0;
             }
         }

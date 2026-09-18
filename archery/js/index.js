@@ -360,6 +360,21 @@ function draw(now) {
     drawSky(accent, now);
     drawGround(accent);
 
+    // Grounding shadows — the archer and target post read as standing IN
+    // the scene rather than pasted flat on top of it.
+    context.save();
+    context.globalAlpha = lm() ? 0.18 : 0.35;
+    context.fillStyle = '#000';
+    context.beginPath();
+    context.ellipse(archerX, archerY + 3, 16, 4, 0, 0, Math.PI * 2);
+    context.fill();
+    if (target) {
+        context.beginPath();
+        context.ellipse(target.x, groundY + 3, 14, 4, 0, 0, Math.PI * 2);
+        context.fill();
+    }
+    context.restore();
+
     // Archer
     context.strokeStyle = accent;
     context.lineWidth = 3;
