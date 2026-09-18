@@ -5,13 +5,23 @@
 // shot is never unfair the way an unbounded random value could be — the
 // same principle behind Snake's randomFreeCell fix earlier this session.
 
-const archeryIsNarrowScreen = window.innerWidth <= 760;
-let boardwidth = archeryIsNarrowScreen
-    ? Math.min(900, window.innerWidth - 24)
-    : Math.max(600, Math.min(900, window.innerWidth - 320));
-let boardheight = archeryIsNarrowScreen
-    ? Math.max(300, window.innerHeight * 0.4)
-    : Math.max(400, Math.min(560, window.innerHeight - 160));
+// Board size tuned per device tier (mobile/tablet both use the stacked
+// layout — see shared/responsive.js — so the board gets the full viewport
+// width either way; only the caps differ so tablets get a roomier board).
+let boardwidth, boardheight;
+switch (getScreenTier()) {
+    case 'mobile':
+        boardwidth = Math.min(700, window.innerWidth - 20);
+        boardheight = Math.max(280, window.innerHeight * 0.38);
+        break;
+    case 'tablet':
+        boardwidth = Math.min(820, window.innerWidth - 40);
+        boardheight = Math.max(360, window.innerHeight * 0.45);
+        break;
+    default:
+        boardwidth = Math.max(600, Math.min(900, window.innerWidth - 320));
+        boardheight = Math.max(400, Math.min(560, window.innerHeight - 160));
+}
 let board, context;
 
 const GRAVITY = 0.32;

@@ -6,9 +6,20 @@ let music = new Audio("js/music.mp3");
 
 //var
 let board;
-const isNarrowScreen = window.innerWidth <= 760;
-let boardwidth = isNarrowScreen ? window.innerWidth - 24 : window.innerWidth / 2.7;
-let boardheight = isNarrowScreen ? window.innerHeight * 0.5 : window.innerHeight / 1.2;
+let boardwidth, boardheight;
+switch (getScreenTier()) {
+    case 'mobile':
+        boardwidth = window.innerWidth - 20;
+        boardheight = window.innerHeight * 0.45;
+        break;
+    case 'tablet':
+        boardwidth = Math.min(680, window.innerWidth - 40);
+        boardheight = window.innerHeight * 0.55;
+        break;
+    default:
+        boardwidth = window.innerWidth / 2.7;
+        boardheight = window.innerHeight / 1.2;
+}
 let context;
 
 //player

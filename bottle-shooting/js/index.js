@@ -551,9 +551,19 @@ function onKeyDown(e) {
 
 function init() {
     board = document.getElementById('board');
-    const isNarrowScreen = window.innerWidth <= 760;
-    boardwidth = isNarrowScreen ? window.innerWidth - 24 : window.innerWidth / 2.3;
-    boardheight = isNarrowScreen ? window.innerHeight * 0.45 : window.innerHeight / 1.3;
+    switch (getScreenTier()) {
+        case 'mobile':
+            boardwidth = window.innerWidth - 20;
+            boardheight = window.innerHeight * 0.4;
+            break;
+        case 'tablet':
+            boardwidth = Math.min(760, window.innerWidth - 40);
+            boardheight = window.innerHeight * 0.48;
+            break;
+        default:
+            boardwidth = window.innerWidth / 2.3;
+            boardheight = window.innerHeight / 1.3;
+    }
     board.width = boardwidth;
     board.height = boardheight;
     context = board.getContext('2d');

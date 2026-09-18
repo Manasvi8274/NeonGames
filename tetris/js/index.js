@@ -481,7 +481,9 @@ function setupTouchControls() {
 }
 
 function resize() {
-    const maxH = Math.min(window.innerHeight - (window.innerWidth <= 760 ? 260 : 140), 720);
+    const tier = getScreenTier();
+    const reserve = tier === 'mobile' ? 280 : tier === 'tablet' ? 220 : 140;
+    const maxH = Math.min(window.innerHeight - reserve, 720);
     const maxW = window.innerWidth - 24;
     cellSize = Math.max(10, Math.floor(Math.min(maxH / ROWS, maxW / COLS)));
     board.width = cellSize * COLS;

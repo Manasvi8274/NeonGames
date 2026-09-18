@@ -182,24 +182,31 @@ body::before {
     letter-spacing: 0.5px;
 }
 
-/* Narrow screens: stack the rail above the game instead of beside it */
-@media (max-width: 900px) {
+/* Tablet & mobile: stack the rail above the game instead of beside it.
+   Keep the 1024/640 breakpoints in sync with shared/responsive.js and the
+   per-game stylesheets. */
+@media (max-width: 1024px) {
     html, body { overflow: auto; }
     .hub {
         flex-direction: column;
-        padding: 66px 12px 12px;
+        padding: 66px 14px 14px;
         height: auto;
         min-height: 100%;
     }
-    .active-game-pane { padding: 0; height: 70vh; min-height: 420px; }
+    .active-game-pane { padding: 0; height: 68vh; min-height: 420px; }
     .game-rail {
         width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
+        grid-template-columns: repeat(3, 1fr);
         overflow: visible;
         padding: 0;
     }
-    .game-card { flex: 1 1 150px; }
+}
+
+@media (max-width: 640px) {
+    .hub { padding: 60px 10px 10px; }
+    .active-game-pane { height: 58vh; min-height: 320px; }
+    .game-rail { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .game-card-tagline { display: none; }
 }
 
 body.light-mode { background: #eef1fb; }
