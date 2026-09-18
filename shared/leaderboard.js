@@ -79,6 +79,22 @@ const Leaderboard = (function () {
         }
     }
 
+    // Makes the sidebar's #hiscoreBox show the true GLOBAL #1 score instead
+    // of just this device's own localStorage record, so every player sees
+    // the same number. Reads the element's current (local) text rather than
+    // needing to know each game's differently-named localStorage key, and
+    // takes the max of the two so the display never regresses if the
+    // Firestore read is briefly behind what this device already knows.
+    async function syncHiscoreDisplay(gameId) {
+        if (!ready) return;
+        const el = document.getElementById('hiscoreBox');
+        if (!el) return;
+        const top = await getTopScores(gameId, 1);
+        if (!top.length) return;
+        const localBest = parseInt(el.textContent, 10) || 0;
+        el.textContent = Math.max(top[0].score, localBest);
+    }
+
     // Call this right after a game ends with the player's final score. If it
     // would place in the top 5 for this game (fewer than 5 entries so far,
     // or it beats the current #5), prompts for a name and submits it.
@@ -146,6 +162,7 @@ const Leaderboard = (function () {
             submitScore(gameId, name, finalScore).then((success) => {
                 if (success) {
                     showBoard(gameId, true);
+                    syncHiscoreDisplay(gameId);
                 } else {
                     body.innerHTML = `
                         <p class="lb-empty">Couldn't reach the leaderboard — check your connection and try again.</p>
@@ -184,5 +201,5 @@ const Leaderboard = (function () {
         body.querySelector('.lb-skip-btn').onclick = closeModal;
     }
 
-    return { init, submitScore, getTopScores, checkAndPromptIfRecord, showBoard };
+    return { init, submitScore, getTopScores, checkAndPromptIfRecord, showBoard, syncHiscoreDisplay };
 })();
