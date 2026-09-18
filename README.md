@@ -39,11 +39,21 @@ service cloud.firestore {
     // Firestore rules can't mix a literal prefix with a wildcard inside one
     // path segment (e.g. `leaderboard_{gameId}` is invalid) — match every
     // top-level collection instead, and restrict to the leaderboard_* ones
-    // with a regex check inside the rule body.
+    // with a regex check inside the rule body. Each game's leaderboard is
+    // capped at exactly 5 documents, at fixed IDs "1".."5" (the doc ID is
+    // the rank) — the client overwrites all 5 slots in one batch whenever a
+    // new score qualifies, which is what evicts the old #5. That means a
+    // qualifying submission is always create-or-update depending on whether
+    // that rank slot already exists, so both must be allowed (never delete).
     match /{collection}/{entryId} {
       allow read: if collection.matches('^leaderboard_.*');
-      allow create: if collection.matches('^leaderboard_.*')
-                    && request.resource.data.keys().hasOnly(['name', 'score', 'timestamp'])
+      allow create, update: if collection.matches('^leaderboard_.*')
+                    && entryId.matches('^[1-5]$')
+                    && request.resource.data.keys().hasOnly(['game', 'rank', 'name', 'score', 'timestamp'])
+                    && request.resource.data.game is string
+                    && request.resource.data.rank is number
+                    && request.resource.data.rank >= 1
+                    && request.resource.data.rank <= 5
                     && request.resource.data.name is string
                     && request.resource.data.name.size() > 0
                     && request.resource.data.name.size() <= 20
@@ -51,12 +61,12 @@ service cloud.firestore {
                     && request.resource.data.score >= 0
                     && request.resource.data.score < 1000000
                     && request.resource.data.timestamp == request.time;
-      allow update, delete: if false;
+      allow delete: if false;
     }
   }
 }
 ```
 
-This allows anyone to read the leaderboard and submit a validated new entry, but never edit or delete existing ones. Note: since there's no server verifying gameplay, a determined visitor could submit a fake score via devtools — an accepted tradeoff for a casual hobby leaderboard, not worth a full backend to prevent.
+This allows anyone to read the leaderboard and overwrite one of the 5 ranked slots with a validated entry, but never delete anything or write outside that shape. Note: since there's no server verifying gameplay, a determined visitor could submit a fake score via devtools — an accepted tradeoff for a casual hobby leaderboard, not worth a full backend to prevent.
 
 Until you do this setup, every game works exactly the same, just without the cross-device leaderboard — no errors, it just quietly stays local-only.

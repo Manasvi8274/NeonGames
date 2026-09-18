@@ -23,12 +23,14 @@ const Leaderboard = (function () {
         }
     }
 
+    const TOP_N = 5;
+
     function collectionFor(gameId) {
         return 'leaderboard_' + gameId;
     }
 
     async function getTopScores(gameId, n) {
-        n = n || 10;
+        n = n || TOP_N;
         if (!ready) return [];
         try {
             const snap = await db.collection(collectionFor(gameId)).orderBy('score', 'desc').limit(n).get();
@@ -39,24 +41,43 @@ const Leaderboard = (function () {
         }
     }
 
+    // Table model: each game's leaderboard collection holds AT MOST 5
+    // documents, at fixed IDs "1".."5" — the doc ID *is* the rank, and each
+    // doc also carries { game, rank, name, score, timestamp } as real
+    // fields, so both the Firestore console and any query show exactly the
+    // GameName / Rank / Score table shape. Submitting re-reads the current
+    // top 5, inserts the new score, re-sorts, and overwrites all 5 slots in
+    // one atomic batch — that's what pushes the previous #5 out entirely
+    // rather than just letting the collection grow unbounded.
     async function submitScore(gameId, name, score) {
         if (!ready) return false;
         const cleanName = String(name || 'Anonymous').trim().slice(0, 20) || 'Anonymous';
         const cleanScore = Math.max(0, Math.min(999999, Number(score) || 0));
         try {
-            await db.collection(collectionFor(gameId)).add({
-                name: cleanName,
-                score: cleanScore,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            const col = db.collection(collectionFor(gameId));
+            const snap = await col.orderBy('score', 'desc').limit(TOP_N).get();
+            const entries = snap.docs.map(d => ({ name: d.data().name, score: d.data().score }));
+            entries.push({ name: cleanName, score: cleanScore });
+            entries.sort((a, b) => b.score - a.score);
+            const top = entries.slice(0, TOP_N);
+
+            const batch = db.batch();
+            top.forEach((entry, i) => {
+                batch.set(col.doc(String(i + 1)), {
+                    game: gameId,
+                    rank: i + 1,
+                    name: entry.name,
+                    score: entry.score,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                });
             });
+            await batch.commit();
             return true;
         } catch (e) {
             console.warn('[Leaderboard] submitScore failed:', e);
             return false;
         }
     }
-
-    const TOP_N = 5;
 
     // Call this right after a game ends with the player's final score. If it
     // would place in the top 5 for this game (fewer than 5 entries so far,
@@ -117,11 +138,27 @@ const Leaderboard = (function () {
         el.classList.add('open');
         const input = body.querySelector('.lb-name-input');
         input.focus();
+        const submitBtn = body.querySelector('.lb-submit-btn');
         const submit = () => {
             const name = input.value.trim() || 'Anonymous';
-            submitScore(gameId, name, finalScore).then(() => showBoard(gameId, true));
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting…';
+            submitScore(gameId, name, finalScore).then((success) => {
+                if (success) {
+                    showBoard(gameId, true);
+                } else {
+                    body.innerHTML = `
+                        <p class="lb-empty">Couldn't reach the leaderboard — check your connection and try again.</p>
+                        <div class="lb-modal-actions">
+                            <button class="neon-btn lb-retry-btn">Try Again</button>
+                            <button class="neon-btn lb-skip-btn">Skip</button>
+                        </div>`;
+                    body.querySelector('.lb-retry-btn').onclick = () => openRecordModal(gameId, finalScore, isNewBest);
+                    body.querySelector('.lb-skip-btn').onclick = closeModal;
+                }
+            });
         };
-        body.querySelector('.lb-submit-btn').onclick = submit;
+        submitBtn.onclick = submit;
         body.querySelector('.lb-skip-btn').onclick = closeModal;
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
     }
