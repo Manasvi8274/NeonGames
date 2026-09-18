@@ -89,12 +89,16 @@ function finishGame(winner) {
     if (mode === 'pvc') {
         const prevBest = JSON.parse(localStorage.getItem('tic-tac-toe-hiscore') || '0');
         streak = winner === 'X' ? streak + 1 : 0;
-        localStorage.setItem('tic-tac-toe-hiscore', JSON.stringify(streak));
-        renderHiscore();
-        if (streak > prevBest && window.Leaderboard) {
+        if (streak > prevBest) {
+            localStorage.setItem('tic-tac-toe-hiscore', JSON.stringify(streak));
             isRecord = true;
-            Leaderboard.checkAndPromptIfRecord('tic-tac-toe', streak);
         }
+        renderHiscore();
+        // Always let the leaderboard decide for itself whether this streak
+        // makes the GLOBAL top 5 — that's a separate, looser condition than
+        // "beats your own local best" (isRecord, above), which only tracks
+        // the local streak badge.
+        if (typeof Leaderboard !== 'undefined') Leaderboard.checkAndPromptIfRecord('tic-tac-toe', streak);
     }
 
     const lines = [];

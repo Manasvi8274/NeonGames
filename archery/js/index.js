@@ -257,7 +257,7 @@ function endRound() {
         ],
         onRestart: startNewGame,
     });
-    if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('archery', score);
+    if (typeof Leaderboard !== 'undefined') Leaderboard.checkAndPromptIfRecord('archery', score);
 }
 
 function updateFlight() {

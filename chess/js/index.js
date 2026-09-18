@@ -231,8 +231,12 @@ function checkGameEnd() {
                 localStorage.setItem('chess-hiscore', String(currentStreak));
                 hiscoreBox.textContent = currentStreak;
                 isRecord = true;
-                if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('chess', currentStreak);
             }
+            // Always let the leaderboard decide for itself whether this streak
+            // makes the GLOBAL top 5 — that's a separate, looser condition
+            // than "beats your own local best" (isRecord, above), which only
+            // tracks the local streak badge.
+            if (typeof Leaderboard !== 'undefined') Leaderboard.checkAndPromptIfRecord('chess', currentStreak);
         } else {
             // Loss or draw against the computer resets the current streak.
             currentStreak = 0;

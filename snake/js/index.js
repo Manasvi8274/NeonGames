@@ -227,7 +227,7 @@ function gameEngine() {
                 ],
                 onRestart: () => { gameOver = false; restartGame(); },
             });
-            if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('snake', finalScore);
+            if (typeof Leaderboard !== 'undefined') Leaderboard.checkAndPromptIfRecord('snake', finalScore);
         }
     }
 

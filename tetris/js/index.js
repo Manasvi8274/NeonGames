@@ -267,7 +267,7 @@ function endGame() {
         ],
         onRestart: startNewGame,
     });
-    if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('tetris', score);
+    if (typeof Leaderboard !== 'undefined') Leaderboard.checkAndPromptIfRecord('tetris', score);
 }
 
 function dropIntervalMs() {

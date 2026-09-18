@@ -288,7 +288,7 @@ function update() {
                 ],
                 onRestart: resetgame,
             });
-            if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('brick_breaker', score);
+            if (typeof Leaderboard !== 'undefined') Leaderboard.checkAndPromptIfRecord('brick_breaker', score);
         }
         return;
     }

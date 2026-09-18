@@ -167,7 +167,7 @@ function endRound() {
         ],
         onRestart: resetRound,
     });
-    if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('bottle-shooting', score);
+    if (typeof Leaderboard !== 'undefined') Leaderboard.checkAndPromptIfRecord('bottle-shooting', score);
 }
 
 function resetRound() {
