@@ -56,14 +56,18 @@ const Leaderboard = (function () {
         }
     }
 
-    // Call this right after a game ends with the player's final score.
-    // If it beats the current #1 for this game, prompts for a name and submits it.
+    const TOP_N = 5;
+
+    // Call this right after a game ends with the player's final score. If it
+    // would place in the top 5 for this game (fewer than 5 entries so far,
+    // or it beats the current #5), prompts for a name and submits it.
     async function checkAndPromptIfRecord(gameId, finalScore) {
         if (!ready || !finalScore || finalScore <= 0) return;
-        const top = await getTopScores(gameId, 1);
-        const currentBest = top.length ? top[0].score : -Infinity;
-        if (finalScore > currentBest) {
-            openRecordModal(gameId, finalScore);
+        const top = await getTopScores(gameId, TOP_N);
+        const makesTopN = top.length < TOP_N || finalScore > top[top.length - 1].score;
+        if (makesTopN) {
+            const isNewBest = !top.length || finalScore > top[0].score;
+            openRecordModal(gameId, finalScore, isNewBest);
         }
     }
 
@@ -96,12 +100,15 @@ const Leaderboard = (function () {
         ).join('') + '</ol>';
     }
 
-    function openRecordModal(gameId, finalScore) {
+    function openRecordModal(gameId, finalScore, isNewBest) {
         const el = ensureModal();
-        el.querySelector('.lb-modal-title').textContent = '🏆 NEW RECORD!';
+        el.querySelector('.lb-modal-title').textContent = isNewBest ? '🏆 NEW RECORD!' : `🏆 TOP ${TOP_N} SCORE!`;
         const body = el.querySelector('.lb-modal-body');
+        const lead = isNewBest
+            ? `You set a new #1 high score of <strong>${finalScore}</strong>! Enter your name for the leaderboard:`
+            : `You made the top ${TOP_N} with a score of <strong>${finalScore}</strong>! Enter your name for the leaderboard:`;
         body.innerHTML = `
-            <p class="lb-lead">You set a new high score of <strong>${finalScore}</strong>! Enter your name for the leaderboard:</p>
+            <p class="lb-lead">${lead}</p>
             <input type="text" class="lb-name-input" maxlength="20" placeholder="Your name" autocomplete="off" />
             <div class="lb-modal-actions">
                 <button class="neon-btn lb-submit-btn">Submit</button>
@@ -133,7 +140,7 @@ const Leaderboard = (function () {
             return;
         }
 
-        const top = await getTopScores(gameId, 10);
+        const top = await getTopScores(gameId, TOP_N);
         body.innerHTML = (justSubmitted ? '<p class="lb-celebrate">Score submitted! 🎉</p>' : '') +
             renderList(top) +
             '<div class="lb-modal-actions"><button class="neon-btn lb-skip-btn">Close</button></div>';
