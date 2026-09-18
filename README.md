@@ -36,9 +36,14 @@ High scores work locally out of the box (each browser remembers its own via `loc
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /leaderboard_{gameId}/{entryId} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['name', 'score', 'timestamp'])
+    // Firestore rules can't mix a literal prefix with a wildcard inside one
+    // path segment (e.g. `leaderboard_{gameId}` is invalid) — match every
+    // top-level collection instead, and restrict to the leaderboard_* ones
+    // with a regex check inside the rule body.
+    match /{collection}/{entryId} {
+      allow read: if collection.matches('^leaderboard_.*');
+      allow create: if collection.matches('^leaderboard_.*')
+                    && request.resource.data.keys().hasOnly(['name', 'score', 'timestamp'])
                     && request.resource.data.name is string
                     && request.resource.data.name.size() > 0
                     && request.resource.data.name.size() <= 20
