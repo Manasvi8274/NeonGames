@@ -8,9 +8,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="../shared/chrome.css">
     <link rel="stylesheet" href="../shared/leaderboard-modal.css">
     <link rel="stylesheet" href="../shared/compact-media.css">
-    <style>:root { --accent: #0095ff; --hi-color: #ffc400; }</style>
+    <style>:root { --accent: #0095ff; --hi-color: #ffc400; } .game-area { position: relative; }</style>
+    <script src="../shared/sfx.js"></script>
+    <script src="../shared/chrome.js"></script>
     <script src="js/index.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -57,11 +60,13 @@
             <button class="neon-btn" onclick="resetgame()">🔄 Restart</button>
             <button class="neon-btn reset-btn" onclick="resethiscore()">Reset Hi Score</button>
             <button class="neon-btn leaderboard-btn" onclick="Leaderboard.showBoard('brick_breaker')">🏆 Leaderboard</button>
-            <a href="../snake/index.html">
-                <button class="neon-btn switch-btn">Switch Game</button>
+            <a href="../index.html">
+                <button class="neon-btn switch-btn">🕹️ All Games</button>
             </a>
         </div>
-        <canvas id="board"></canvas>
+        <div class="game-area">
+            <canvas id="board"></canvas>
+        </div>
     </div>
 </body>
 </html>

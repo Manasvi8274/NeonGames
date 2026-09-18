@@ -2,6 +2,7 @@ let board = Array(9).fill(null);
 let currentPlayer = 'X';
 let mode = 'pvp'; // 'pvp' | 'pvc' — computer always plays O
 let paused = false;
+let started = false;
 let gameOver = false;
 let streak = JSON.parse(localStorage.getItem('tic-tac-toe-hiscore') || '0');
 
@@ -40,8 +41,9 @@ function buildBoard() {
 }
 
 function handleCellClick(i) {
-    if (paused || gameOver || board[i]) return;
+    if (!started || paused || gameOver || board[i]) return;
     if (mode === 'pvc' && currentPlayer === 'O') return; // computer's turn
+    SFX.play('select');
     placeMark(i);
 }
 
@@ -83,15 +85,32 @@ function finishGame(winner) {
     renderTurn();
     setStatus(winner ? winner + ' WINS!' : 'DRAW');
 
+    let isRecord = false;
     if (mode === 'pvc') {
         const prevBest = JSON.parse(localStorage.getItem('tic-tac-toe-hiscore') || '0');
         streak = winner === 'X' ? streak + 1 : 0;
         localStorage.setItem('tic-tac-toe-hiscore', JSON.stringify(streak));
         renderHiscore();
         if (streak > prevBest && window.Leaderboard) {
+            isRecord = true;
             Leaderboard.checkAndPromptIfRecord('tic-tac-toe', streak);
         }
     }
+
+    const lines = [];
+    if (mode === 'pvc') lines.push({ label: 'Win streak', value: streak, record: isRecord });
+    const playerWon = mode === 'pvc' ? winner === 'X' : !!winner;
+
+    GameChrome.showEnd({
+        container: '.game-area',
+        icon: !winner ? '🤝' : (mode === 'pvc' ? (winner === 'X' ? '🏆' : '💀') : '⭕'),
+        title: winner ? winner + ' WINS!' : 'DRAW',
+        win: playerWon,
+        sound: isRecord ? 'record' : undefined,
+        badge: isRecord ? 'NEW BEST STREAK!' : '',
+        lines,
+        onRestart: resetBoard,
+    });
 }
 
 function resetBoard() {
@@ -111,8 +130,9 @@ function setMode(newMode) {
 }
 
 function togglePause() {
-    if (gameOver) return;
+    if (!started || gameOver) return;
     paused = !paused;
+    SFX.play('pause');
     const btn = document.getElementById('pauseBtn');
     const overlay = document.getElementById('pauseOverlay');
     if (btn) {
@@ -135,4 +155,17 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHiscore();
     buildBoard();
     renderTurn();
+
+    GameChrome.boot({
+        container: '.game-area',
+        icon: '⭕',
+        title: 'TIC TAC TOE',
+        subtitle: 'Classic 3x3 — play a friend or the unbeatable computer.',
+        instructions: [
+            'Click a square to place your mark',
+            'Switch to "vs CPU" for a computer opponent',
+        ],
+        promptText: 'Press Space / Click to Start',
+        onStart: () => { started = true; },
+    });
 });

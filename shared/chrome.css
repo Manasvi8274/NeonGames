@@ -1,0 +1,189 @@
+/* Shared loading / start / end screens ("game chrome"), layered inside
+   .game-area alongside the existing .pause-overlay. Each game only needs
+   to include this file + chrome.js and call GameChrome.init(...). */
+
+.chrome-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+    padding: 24px;
+    background: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--accent) 10%, #050510) 0%, #050510 75%);
+    border-radius: 10px;
+    opacity: 1;
+    transition: opacity 0.35s ease;
+}
+.chrome-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ---- Loading ---- */
+.chrome-spinner {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 3px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    border-top-color: var(--accent);
+    animation: chromeSpin 0.9s linear infinite;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+@keyframes chromeSpin { to { transform: rotate(360deg); } }
+
+.chrome-loading-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent) 70%, white);
+    animation: chromeBlink 1.2s ease-in-out infinite;
+}
+@keyframes chromeBlink { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+.chrome-loading-bar-track {
+    width: min(220px, 70%);
+    height: 4px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    overflow: hidden;
+}
+.chrome-loading-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    transition: width 0.25s ease;
+}
+
+/* ---- Start / Game-over shared card ---- */
+.chrome-icon {
+    font-size: 46px;
+    filter: drop-shadow(0 0 14px var(--accent));
+    animation: chromeFloat 2.4s ease-in-out infinite;
+}
+@keyframes chromeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+.chrome-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 16px var(--accent), 0 0 40px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.chrome-subtitle {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(230, 230, 240, 0.75);
+    max-width: 320px;
+    line-height: 1.7;
+}
+.chrome-instructions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 4px 0 6px;
+    font-family: 'Orbitron', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    color: rgba(210, 210, 225, 0.65);
+}
+.chrome-instructions span { display: block; }
+.chrome-instructions kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius: 5px;
+    color: var(--accent);
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    margin: 0 2px;
+}
+
+.chrome-prompt {
+    margin-top: 6px;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #fff;
+    padding: 12px 28px;
+    border: 1px solid var(--accent);
+    border-radius: 30px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    animation: chromePulseBtn 1.4s ease-in-out infinite;
+    cursor: pointer;
+}
+@keyframes chromePulseBtn {
+    0%, 100% { box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent); }
+    50%      { box-shadow: 0 0 26px color-mix(in srgb, var(--accent) 70%, transparent); }
+}
+
+.chrome-result-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 2px 0 8px;
+}
+.chrome-result-line {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: rgba(230, 230, 240, 0.85);
+}
+.chrome-result-line strong {
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent);
+    font-size: 16px;
+}
+.chrome-result-line.new-record strong {
+    color: var(--hi-color, #ffc400);
+    text-shadow: 0 0 12px var(--hi-color, #ffc400);
+}
+
+.chrome-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--hi-color, #ffc400);
+    text-shadow: 0 0 10px var(--hi-color, #ffc400);
+    animation: chromeBlink 1s ease-in-out infinite;
+}
+
+.chrome-mute-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 45;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: rgba(5, 5, 16, 0.55);
+    color: var(--accent);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.chrome-mute-btn:hover {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+body.light-mode .chrome-overlay {
+    background: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--accent) 14%, #f4f6ff) 0%, #eef1fb 75%);
+}
+body.light-mode .chrome-subtitle,
+body.light-mode .chrome-instructions,
+body.light-mode .chrome-result-line { color: rgba(30, 30, 50, 0.7); }
+body.light-mode .chrome-prompt { color: #111; }
+body.light-mode .chrome-mute-btn { background: rgba(255,255,255,0.7); }

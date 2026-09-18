@@ -22,6 +22,8 @@ let shieldActive = false;
 let foodEaten = 0;
 
 let paused = false;
+let started = false;
+let gameOver = false;
 
 const POWERS = [
     { type: 'speed',   color: '#ffcc00', label: 'FAST'    },
@@ -86,6 +88,7 @@ function restartGame() {
     activePower = null;
     foodEaten = 0;
     powerup = null;
+    musicStarted = false;
     InputDir = { x: 0, y: 0 };
     snakearr = [{ x: 13, y: 15 }];
     score = 0;
@@ -94,6 +97,7 @@ function restartGame() {
 }
 
 function togglePause() {
+    if (!started || gameOver) return;
     paused = !paused;
     const btn = document.getElementById('pauseBtn');
     const overlay = document.getElementById('pauseOverlay');
@@ -141,7 +145,7 @@ function main(ctime) {
 
     updatePowerHUD();
 
-    if (paused) return;
+    if (paused || !started || gameOver) return;
     if ((ctime - lastPaintTime) / 1000 < 1 / speed) return;
     lastPaintTime = ctime;
     gameEngine();
@@ -206,20 +210,24 @@ function gameEngine() {
         } else {
             gameover_sound.play();
             music_sound.pause();
-            speed = baseSpeed;
-            scoreMultiplier = 1;
-            shieldActive = false;
-            document.getElementById('board').classList.remove('shield-on');
-            activePower = null;
-            foodEaten = 0;
-            powerup = null;
-            musicStarted = false;
+            gameOver = true;
             InputDir = { x: 0, y: 0 };
-            alert("GAME OVER");
-            if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('snake', score);
-            snakearr = [{ x: 13, y: 15 }];
-            score = 0;
-            scoreBox.innerHTML = score;
+            const finalScore = score;
+            const isRecord = finalScore > 0 && finalScore >= hiscore;
+            GameChrome.showEnd({
+                container: '.game-area',
+                icon: isRecord ? '🏆' : '🐍',
+                title: 'GAME OVER',
+                win: isRecord,
+                sound: isRecord ? 'record' : undefined,
+                badge: isRecord ? 'NEW HIGH SCORE!' : '',
+                lines: [
+                    { label: 'Score', value: finalScore, record: isRecord },
+                    { label: 'Hi Score', value: hiscore },
+                ],
+                onRestart: () => { gameOver = false; restartGame(); },
+            });
+            if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('snake', finalScore);
         }
     }
 
@@ -305,6 +313,7 @@ window.requestAnimationFrame(main);
 window.addEventListener('keydown', e => {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
     if (e.key === "Escape") { togglePause(); return; }
+    if (!started || gameOver || paused) return;
     move_sound.play();
     if (!musicStarted) { music_sound.play(); musicStarted = true; }
     switch (e.key) {
@@ -315,4 +324,18 @@ window.addEventListener('keydown', e => {
         case "p":
         case "P":          togglePause(); return;
     }
+});
+
+GameChrome.boot({
+    container: '.game-area',
+    icon: '🐍',
+    title: 'SNAKE',
+    subtitle: 'Classic snake with power-ups and a shield.',
+    instructions: [
+        '<kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> to move',
+        'Grab glowing power-ups for speed, shields & more',
+        '<kbd>P</kbd> / <kbd>ESC</kbd> to pause',
+    ],
+    promptText: 'Press Space / Click to Start',
+    onStart: () => { started = true; },
 });

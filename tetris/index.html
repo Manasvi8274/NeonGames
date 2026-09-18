@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOTTLE SHOOTING</title>
+    <title>TETRIS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
@@ -12,16 +12,8 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="../shared/leaderboard-modal.css">
     <link rel="stylesheet" href="../shared/compact-media.css">
-    <style>:root { --accent: #ff2fd0; --hi-color: #ffc400; }</style>
+    <style>:root { --accent: #00e5ff; --hi-color: #ffc400; }</style>
     <script src="../shared/theme.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.top !== window.self) {
-                const sw = document.querySelector('.switch-btn');
-                if (sw && sw.parentElement) sw.parentElement.style.display = 'none';
-            }
-        });
-    </script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="../shared/firebase-config.js"></script>
@@ -30,11 +22,19 @@
     <script src="../shared/sfx.js"></script>
     <script src="../shared/chrome.js"></script>
     <script src="js/index.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.top !== window.self) {
+                const sw = document.querySelector('.switch-btn');
+                if (sw && sw.parentElement) sw.parentElement.style.display = 'none';
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="body">
         <div class="sidebar">
-            <h1 class="game-title">BOTTLE<br>SHOOTING</h1>
+            <h1 class="game-title">TETRIS</h1>
             <div class="score-card">
                 <div class="score-label">Score</div>
                 <div id="scoreBox" class="score-value">0</div>
@@ -43,23 +43,31 @@
                 <div class="score-label hi-label">Hi Score</div>
                 <div id="hiscoreBox" class="score-value hi-value">0</div>
             </div>
-            <div class="score-card time-card">
-                <div class="score-label">Time</div>
-                <div id="timeBox" class="score-value">0:45</div>
+            <div class="tetris-stat-row">
+                <div class="score-card small">
+                    <div class="score-label">Level</div>
+                    <div id="levelBox" class="score-value">1</div>
+                </div>
+                <div class="score-card small">
+                    <div class="score-label">Lines</div>
+                    <div id="linesBox" class="score-value">0</div>
+                </div>
             </div>
-            <div class="score-card combo-card">
-                <div class="score-label">Combo</div>
-                <div id="comboBox" class="score-value">x1</div>
-            </div>
-            <div class="score-card">
-                <div class="score-label">Lives</div>
-                <div id="livesBox" class="score-value">❤❤❤</div>
+            <div class="tetris-preview-row">
+                <div class="score-card small">
+                    <div class="score-label">Hold</div>
+                    <canvas id="holdCanvas" width="64" height="64"></canvas>
+                </div>
+                <div class="score-card small">
+                    <div class="score-label">Next</div>
+                    <canvas id="nextCanvas" width="64" height="64"></canvas>
+                </div>
             </div>
             <button class="neon-btn pause-btn" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
             <button class="neon-btn theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
-            <button class="neon-btn" onclick="resetRound()">🔄 Restart</button>
+            <button class="neon-btn" onclick="startNewGame()">🔄 Restart</button>
             <button class="neon-btn" onclick="resetHiscore()">Reset Hi Score</button>
-            <button class="neon-btn leaderboard-btn" onclick="Leaderboard.showBoard('bottle-shooting')">🏆 Leaderboard</button>
+            <button class="neon-btn leaderboard-btn" onclick="Leaderboard.showBoard('tetris')">🏆 Leaderboard</button>
             <a href="../index.html">
                 <button class="neon-btn switch-btn">🕹️ All Games</button>
             </a>

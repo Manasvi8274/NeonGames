@@ -1,0 +1,38 @@
+.game-area {
+    position: relative;
+}
+
+#board {
+    background: #0a0a12;
+    border: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    border-radius: 10px;
+    box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 20%, transparent),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+    display: block;
+}
+
+.tetris-stat-row,
+.tetris-preview-row {
+    display: flex;
+    gap: 10px;
+}
+.tetris-stat-row .score-card,
+.tetris-preview-row .score-card {
+    flex: 1;
+}
+.score-card.small {
+    padding: 10px 12px;
+}
+.score-card.small .score-value {
+    font-size: 22px;
+}
+
+#holdCanvas, #nextCanvas {
+    display: block;
+    margin: 2px auto 0;
+}
+
+body.light-mode #board {
+    background: #f4f6ff;
+    box-shadow: 0 4px 24px color-mix(in srgb, var(--accent) 15%, transparent);
+}

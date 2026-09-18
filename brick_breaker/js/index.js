@@ -65,6 +65,7 @@ if (hiscore === null) {
 //game state
 let gameover = false;
 let paused = false;
+let started = false;
 
 // Lives system
 let lives = 3;
@@ -117,7 +118,7 @@ function updatePowerHUD() {
 
 // Pause
 function togglePause() {
-    if (gameover) return;
+    if (!started || gameover) return;
     paused = !paused;
     const btn = document.getElementById('pauseBtn');
     if (btn) {
@@ -192,13 +193,28 @@ window.onload = function () {
     updatePowerHUD();
 
     requestAnimationFrame(update);
-    music.play();
     document.addEventListener("keydown", moveplayer);
     createblock();
+
+    GameChrome.boot({
+        container: '.game-area',
+        icon: '🧱',
+        title: 'BRICK BREAKER',
+        subtitle: 'Bounce the ball, clear every brick.',
+        instructions: [
+            '<kbd>←</kbd> <kbd>→</kbd> to move the paddle',
+            'Catch falling power-ups for an edge',
+            '<kbd>P</kbd> / <kbd>ESC</kbd> to pause',
+        ],
+        promptText: 'Press Space / Click to Start',
+        onStart: () => { started = true; music.play(); },
+    });
 }
 
 function update() {
     requestAnimationFrame(update);
+
+    if (!started) return;
 
     if (paused) {
         drawPauseOverlay();
@@ -206,15 +222,27 @@ function update() {
     }
 
     if (gameover) {
-        music.pause();
         if (!gameOverMusicPlayed) {
+            music.pause();
             gameover_music.play();
             gameOverMusicPlayed = true;
+            const isRecord = score > 0 && score >= hiscore;
+            GameChrome.showEnd({
+                container: '.game-area',
+                icon: isRecord ? '🏆' : '🧱',
+                title: 'GAME OVER',
+                win: isRecord,
+                sound: isRecord ? 'record' : undefined,
+                badge: isRecord ? 'NEW HIGH SCORE!' : '',
+                lines: [
+                    { label: 'Score', value: score, record: isRecord },
+                    { label: 'Hi Score', value: hiscore },
+                ],
+                onRestart: resetgame,
+            });
+            if (window.Leaderboard) Leaderboard.checkAndPromptIfRecord('brick_breaker', score);
         }
-        setTimeout(() => {
-            gameover_music.pause();
-            document.addEventListener("keydown", moveplayer);
-        }, 1500);
+        return;
     }
 
     // Background
@@ -258,18 +286,6 @@ function update() {
         lives--;
         updateLivesDisplay();
         if (lives <= 0) {
-            context.shadowBlur = lm() ? 0 : 20;
-            context.shadowColor = lm() ? 'transparent' : '#ff0066';
-            context.fillStyle = lm() ? '#cc0033' : '#ff0066';
-            context.font = "bold 28px Orbitron, monospace";
-            context.fillText("GAME OVER", board.width / 2 - 90, board.height / 2 - 10);
-            context.shadowBlur = 0;
-            context.fillStyle = lm() ? 'rgba(40,40,40,0.8)' : 'rgba(200,200,200,0.8)';
-            context.font = "12px Orbitron, monospace";
-            context.fillText("Press SPACE to restart", board.width / 2 - 80, board.height / 2 + 30);
-            // gameOverMusicPlayed also guards this: without it, this branch keeps re-firing
-            // every frame once gameover is true (ball position isn't reset on death).
-            if (window.Leaderboard && !gameOverMusicPlayed) Leaderboard.checkAndPromptIfRecord('brick_breaker', score);
             gameover = true;
         } else {
             ball.x = boardwidth / 2;
@@ -371,10 +387,8 @@ function moveplayer(e) {
         togglePause();
         return;
     }
-    if (paused) return;
-    if (gameover) {
-        if (e.code === "Space") resetgame();
-    } else if (e.code === "ArrowLeft") {
+    if (!started || paused || gameover) return;
+    if (e.code === "ArrowLeft") {
         let nextx = player.x - player.velocityX;
         if (!outbound(nextx)) player.x = nextx;
     } else if (e.code === "ArrowRight") {

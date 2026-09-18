@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.12.1/chess.min.js"></script>
     <link rel="stylesheet" href="../shared/theme.css">
+    <link rel="stylesheet" href="../shared/chrome.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="../shared/leaderboard-modal.css">
     <link rel="stylesheet" href="../shared/compact-media.css">
@@ -19,6 +20,8 @@
     <script src="../shared/firebase-config.js"></script>
     <script src="../shared/leaderboard.js"></script>
     <script>Leaderboard.init(firebaseConfig);</script>
+    <script src="../shared/sfx.js"></script>
+    <script src="../shared/chrome.js"></script>
     <script src="js/ai.js" defer></script>
     <script src="js/index.js" defer></script>
     <script>
@@ -44,6 +47,8 @@
             </div>
             <div id="statusBox"></div>
             <button class="neon-btn" id="modeBtn" onclick="toggleMode()">Mode: PvP</button>
+            <button class="neon-btn" id="colorBtn" onclick="toggleColor()" style="display:none;">You play: White</button>
+            <button class="neon-btn" id="difficultyBtn" onclick="cycleDifficulty()" style="display:none;">Difficulty: Medium</button>
             <button class="neon-btn pause-btn" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
             <button class="neon-btn theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️ Light</button>
             <button class="neon-btn" onclick="resetBoard()">🔄 Restart</button>
@@ -57,6 +62,10 @@
             <div id="pauseOverlay" class="pause-overlay" style="display:none;">
                 <span>PAUSED</span>
                 <small>Press Esc to resume</small>
+            </div>
+            <div id="promoOverlay" class="chrome-overlay hidden" style="z-index:60;">
+                <div class="chrome-title" style="font-size:18px;">PROMOTE PAWN</div>
+                <div id="promoChoices" style="display:flex; gap:14px; margin-top:10px;"></div>
             </div>
         </div>
     </div>

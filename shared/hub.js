@@ -4,7 +4,8 @@ const GAMES = [
     { id: 'chess',           folder: 'chess',           title: 'Chess',          emoji: '♟️', accent: '#b388ff', tagline: 'Play a friend, or the computer' },
     { id: 'tic-tac-toe',     folder: 'tic-tac-toe',     title: 'Tic Tac Toe',    emoji: '⭕', accent: '#ff9500', tagline: 'PvP, or an unbeatable computer' },
     { id: 'archery',         folder: 'archery',         title: 'Archery',        emoji: '🏹', accent: '#ff3860', tagline: 'Aim, charge your shot, release' },
-    { id: 'bottle-shooting', folder: 'bottle-shooting', title: 'Bottle Shooting', emoji: '🎯', accent: '#ff2fd0', tagline: 'Fast-paced shooting gallery' },
+    { id: 'bottle-shooting', folder: 'bottle-shooting', title: 'Bottle Shooting', emoji: '🎯', accent: '#ff2fd0', tagline: 'Time your shot as the target sweeps by' },
+    { id: 'tetris',          folder: 'tetris',          title: 'Tetris',         emoji: '🧱', accent: '#00e5ff', tagline: 'Stack, clear lines, chase the high score', isNew: true },
 ];
 
 function getRequestedGame() {
@@ -20,8 +21,9 @@ function renderRail(activeId) {
                 style="--card-accent: ${g.accent}; animation-delay: ${i * 60}ms"
                 data-game="${g.id}"
                 aria-label="Switch to ${g.title}">
+            ${g.isNew ? '<span class="game-card-new">NEW</span>' : ''}
             <div class="game-card-top">
-                <span class="game-card-emoji">${g.emoji}</span>
+                <span class="game-card-icon-plate"><span class="game-card-emoji">${g.emoji}</span></span>
                 <span class="game-card-title">${g.title}</span>
                 <span class="game-card-dot"></span>
             </div>

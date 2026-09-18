@@ -9,6 +9,24 @@ html, body {
     overflow: hidden;
 }
 
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 40% 35% at 12% 15%, rgba(0,255,136,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 35% at 85% 20%, rgba(179,136,255,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 40% at 50% 90%, rgba(255,47,208,0.08) 0%, transparent 60%);
+    animation: hubDrift 18s ease-in-out infinite alternate;
+}
+@keyframes hubDrift {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-1.5%, 1.5%) scale(1.04); }
+}
+.hub-header, .hub { position: relative; z-index: 1; }
+
 .hub-header {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -74,6 +92,7 @@ html, body {
 
 .game-card {
     --card-accent: #00ff88;
+    position: relative;
     background: rgba(255,255,255,0.03);
     border: 1px solid color-mix(in srgb, var(--card-accent) 30%, transparent);
     border-radius: 10px;
@@ -87,6 +106,33 @@ html, body {
     transform: translateY(10px);
     animation: cardIn 0.4s ease forwards;
     min-width: 0;
+    overflow: hidden;
+}
+
+.game-card-new {
+    position: absolute;
+    top: 8px;
+    right: -22px;
+    transform: rotate(35deg);
+    background: linear-gradient(90deg, #ff2fd0, #b388ff);
+    color: #fff;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 2px 26px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+.game-card-icon-plate {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--card-accent) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--card-accent) 35%, transparent);
 }
 @keyframes cardIn {
     to { opacity: 1; transform: translateX(0); }
@@ -110,7 +156,7 @@ html, body {
     gap: 10px;
     margin-bottom: 6px;
 }
-.game-card-emoji { font-size: 22px; }
+.game-card-emoji { font-size: 16px; }
 .game-card-title {
     font-size: 13px;
     font-weight: 700;

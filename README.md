@@ -1,4 +1,4 @@
-# Neon Arcade — 6 Games
+# Neon Arcade — 7 Games
 
 A static, no-build-step web arcade hosted on GitHub Pages: pick a game from the right-side rail and it loads on the left, sidebar and all.
 
@@ -11,7 +11,8 @@ A static, no-build-step web arcade hosted on GitHub Pages: pick a game from the 
 | ♟️ Chess | PvP / vs Computer | Rules via `chess.js`; computer uses a small minimax search |
 | ⭕ Tic Tac Toe | PvP / vs Computer | Computer plays perfectly (minimax) |
 | 🏹 Archery | Single player | Aim, charge power, release; wind + shrinking targets ramp difficulty |
-| 🎯 Bottle Shooting | Single player | Timed shooting gallery with a combo multiplier |
+| 🎯 Bottle Shooting | Single player | An auto-sweeping reticle — fire on the beat to smash bottles for a combo multiplier |
+| 🧱 Tetris | Single player | 7-bag randomizer, hold, ghost piece, wall kicks, level-scaling gravity |
 
 ## How to use
 
@@ -19,7 +20,7 @@ Clone the repo and open `index.html` (via any local server, e.g. `python -m http
 
 ## Architecture
 
-Every game is a fully self-contained folder (own `index.html`/`css`/`js`), embedded into the hub shell (`index.html` + `shared/hub.js`/`hub.css`) via an `<iframe>` that swaps `src` when you click a card — this keeps each game's code completely independent (no shared global variables to collide across 6 different games). Common sidebar/button styling for the 4 new games lives in `shared/theme.css`, parameterized by a `--accent` CSS variable per game; Snake and Brick Breaker keep their original, already-tuned stylesheets untouched.
+Every game is a fully self-contained folder (own `index.html`/`css`/`js`), embedded into the hub shell (`index.html` + `shared/hub.js`/`hub.css`) via an `<iframe>` that swaps `src` when you click a card — this keeps each game's code completely independent (no shared global variables to collide across 7 different games). Common sidebar/button styling lives in `shared/theme.css`, parameterized by a `--accent` CSS variable per game; Snake and Brick Breaker keep their original, already-tuned stylesheets. `shared/sfx.js` is a small synthesized sound-effect engine (no audio files to fetch) and `shared/chrome.js`/`chrome.css` provide the shared loading screen, start screen, and game-over/congratulations card used by every game.
 
 ## Cross-device leaderboards (optional setup)
 
