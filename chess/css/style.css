@@ -1,6 +1,8 @@
 #board {
     width: 80vmin;
-    height: 80vmin;
+    max-width: 100%;
+    aspect-ratio: 1;
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);

@@ -1,5 +1,7 @@
 #board {
     touch-action: none;
+    max-width: 100%;
+    display: block;
     border: 2px solid rgba(255, 56, 96, 0.35);
     border-radius: 12px;
     box-shadow:

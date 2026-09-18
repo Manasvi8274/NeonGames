@@ -1,6 +1,8 @@
 #board {
     width: min(64vmin, 460px);
-    height: min(64vmin, 460px);
+    max-width: 100%;
+    aspect-ratio: 1;
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);

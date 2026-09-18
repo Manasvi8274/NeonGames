@@ -4,6 +4,8 @@
 
 #board {
     touch-action: none;
+    max-width: 100%;
+    display: block;
     background: #0a0a12;
     border: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
     border-radius: 10px;

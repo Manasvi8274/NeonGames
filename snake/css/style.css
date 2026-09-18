@@ -97,7 +97,9 @@ body::before {
         #050510;
     background-size: calc(100% / 18) calc(100% / 18);
     width: 80vmin;
-    height: 80vmin;
+    max-width: 100%;
+    aspect-ratio: 1;
+    box-sizing: border-box;
     border: 2px solid rgba(0, 255, 136, 0.35);
     box-shadow:
         0 0 30px rgba(0, 255, 136, 0.15),
@@ -513,7 +515,7 @@ body.light-mode .touch-btn { background: rgba(0, 140, 60, 0.12); color: #006633;
     .sidebar { width: 100%; max-width: 620px; min-width: 0; flex-direction: row; flex-wrap: wrap; justify-content: center; }
     .sidebar > * { flex: 1 1 160px; }
     .sidebar > .game-title { flex-basis: 100%; }
-    .game-area { width: 100%; display: flex; flex-direction: column; align-items: center; }
+    .game-area { width: 100%; min-height: 380px; display: flex; flex-direction: column; align-items: center; }
 }
 
 /* ===== MOBILE: tighter still — a single column, smaller margins ===== */
