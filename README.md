@@ -4,7 +4,7 @@
 
 A static, no-build-step web arcade hosted on GitHub Pages — pick a game from the side rail, it loads instantly, and your high score follows you across every device. No downloads, no sign-ups, no loading spinners longer than a heartbeat. Just click and play.
 
-### 🎮 [**Play Neon Arcade now →**](https://manasvi8274.github.io/Twin_games-snake-brick-breaker/)
+### 🎮 [**Play Neon Arcade now →**](https://manasvi8274.github.io/NeonGames/?game=snake)
 
 ---
 
