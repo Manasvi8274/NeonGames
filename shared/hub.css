@@ -193,7 +193,13 @@ body::before {
         height: auto;
         min-height: 100%;
     }
-    .active-game-pane { padding: 0; height: 68vh; min-height: 420px; }
+    /* min-height only (not height): shared/hub.js grows #gameFrame to match
+       the loaded game's real content height, and this pane must be free to
+       grow with it — a fixed height here would just clip the extra content
+       into its own hard-to-notice nested scrollbar, which was the original
+       bug. 68vh is just the starting size shown before that JS measurement
+       lands on first paint. */
+    .active-game-pane { padding: 0; min-height: 68vh; }
     .game-rail {
         width: 100%;
         grid-template-columns: repeat(3, 1fr);
@@ -204,7 +210,7 @@ body::before {
 
 @media (max-width: 640px) {
     .hub { padding: 60px 10px 10px; }
-    .active-game-pane { height: 58vh; min-height: 320px; }
+    .active-game-pane { min-height: 58vh; }
     .game-rail { grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .game-card-tagline { display: none; }
 }
